@@ -8,7 +8,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Created on 30.08.2017.
- * хелпер класс для выполнения запросов к mvc Контроллерам
+ *
+ * Wrapper for MockMvc to send request and assert response
+ * in more intuitive way.
  *
  * @author Sergey Vdovin
  * @author Korovin Anatoliy
@@ -36,20 +38,20 @@ public class MvcRequester {
     }
 
     /**
-     * Статик фактори метод, для создания хелпер объекта
+     * static factory method
      *
-     * @param mockMvc mock через который будут выполнятся запросы
+     * @param mockMvc {@link MockMvc} which will be used to make a request
      */
     public static MvcRequester on(MockMvc mockMvc) {
         return new MvcRequester(mockMvc);
     }
 
     /**
-     * Статик фактори метод, для создания хелпер объекта, с у казанием мапера,
-     * которым будем преобразовывать тело запросов в json перед отправкой и получением
+     * Static factory method, with a definition of {@link ObjectMapper} which will be used to
+     * read/write JSON data for requests and from responses.
      *
-     * @param mockMvc      mockMvc через который выполняем запросы
-     * @param objectMapper мапер которым кодируем тело запроса
+     * @param mockMvc      {@link MockMvc} which will be used to make a request
+     * @param objectMapper {@link ObjectMapper} used to read/write JSON in response/request
      * @return MvcRequester
      */
     public static MvcRequester on(MockMvc mockMvc,
@@ -59,13 +61,12 @@ public class MvcRequester {
     }
 
     /**
-     * Статик фактори метод, для создания хелпер объекта, с у казанием мапера,
-     * которым будем преобразовывать тело запросов в json перед отправкой
-     * и указанием отдельного мапера для получаемого json
+     * Static factory method, with a definition of {@link ObjectMapper} which will be used to
+     * read/write JSON data for requests and from responses.
      *
-     * @param mockMvc           mockMvc через который выполняем запросы
-     * @param sendJsonMapper    мапер которым кодируем тело запроса перед отправкой
-     * @param receiveJsonMapper мапер которым будет декодироватся приходящий в ответе json
+     * @param mockMvc           {@link MockMvc} which will be used to make a request
+     * @param sendJsonMapper    {@link ObjectMapper} to write JSON data before send it in request
+     * @param receiveJsonMapper {@link ObjectMapper} to read JSON data from response
      * @return MvcRequester
      */
     public static MvcRequester on(MockMvc mockMvc,
@@ -76,10 +77,10 @@ public class MvcRequester {
     }
 
     /**
-     * сеттер для url на который будет отправлен запрос
+     * Send request to selected URI
      *
-     * @param pattern щаблон
-     * @param args    перменные для вставки в шаблон
+     * @param pattern pattern of the URI to the resource
+     * @param args    values of arguments which used in pattern
      */
     public MvcRequestPointed to(String pattern, Object... args) {
         String url = pattern.trim();
