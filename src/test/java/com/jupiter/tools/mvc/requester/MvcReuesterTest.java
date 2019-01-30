@@ -1,61 +1,50 @@
 package com.jupiter.tools.mvc.requester;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import javax.servlet.http.HttpServletRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Created on 16.07.2018.
+ * Created on 30.01.2019.
  *
  * @author Korovin Anatoliy
  */
-@SpringBootTest
-@RunWith(SpringRunner.class)
-@AutoConfigureMockMvc
-public class MvcRequesterITest {
+@ExtendWith(SpringExtension.class)
+@WebAppConfiguration
+@ContextConfiguration(classes = MvcReuesterTest.WebConfig.class)
+class MvcReuesterTest {
 
     @Autowired
+    private WebApplicationContext wac;
+
     private MockMvc mockMvc;
 
-    @Test
-    public void expectHttpStatus() throws Exception {
-        // Act
-        MvcRequester.on(mockMvc)
-                    .to("/test/hello")
-                    .get()
-                    // Assert
-                    .expectStatus(HttpStatus.OK);
-    }
-
-    @Test(expected = AssertionError.class)
-    public void expectWithWrongStatusMustThrowAssertionError() throws Exception {
-        // Act
-        MvcRequester.on(mockMvc)
-                    .to("/test/error")
-                    .get()
-                    // Assert
-                    .expectStatus(HttpStatus.OK);
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
+        assertThat(mockMvc).isNotNull();
     }
 
     @Test
-    public void expectStatusAndReturn() throws Exception {
+    void expectStatusAndReturn() throws Exception {
         // Act
         String result = MvcRequester.on(mockMvc)
                                     .to("/test/hello")
@@ -68,7 +57,7 @@ public class MvcRequesterITest {
     }
 
     @Test
-    public void returnAsPrimitiveToInteger() throws Exception {
+    void returnAsPrimitiveToInteger() throws Exception {
         // Act
         Integer result = MvcRequester.on(mockMvc)
                                      .to("/test/integer")
@@ -81,7 +70,7 @@ public class MvcRequesterITest {
     }
 
     @Test
-    public void testCreate() throws Exception {
+    void testCreate() throws Exception {
         // Arrange
         // Act
         MvcRequester.on(mockMvc)
@@ -91,9 +80,8 @@ public class MvcRequesterITest {
                     .expectStatus(HttpStatus.CREATED);
     }
 
-
     @Test
-    public void testUrlTrim() throws Exception {
+    void testUrlTrim() throws Exception {
         // Arrange
         // Act
         MvcRequester.on(mockMvc)
@@ -104,7 +92,7 @@ public class MvcRequesterITest {
     }
 
     @Test
-    public void testAppendSlashInBeginOfUrl() throws Exception {
+    void testAppendSlashInBeginOfUrl() throws Exception {
         // Arrange
         // Act
         MvcRequester.on(mockMvc)
@@ -115,7 +103,7 @@ public class MvcRequesterITest {
     }
 
     @Test
-    public void testSendHeaders() throws Exception {
+    void testSendHeaders() throws Exception {
 
         String result = MvcRequester.on(mockMvc)
                                     .to("test/headers/check")
@@ -127,20 +115,42 @@ public class MvcRequesterITest {
     }
 
     @Test
-    public void testGetHeaders() throws Exception {
-
+    void testGetHeaders() throws Exception {
+        // Act
         MvcRequester.on(mockMvc)
                     .to("test/headers/get")
                     .get()
+                    // Assert
                     .expectHeader("response-header", "12345");
-    };
+    }
 
-    @TestConfiguration
-    public static class TestConfig {
+
+    @Test
+    void expectHttpStatus() throws Exception {
+        // Act
+        MvcRequester.on(mockMvc)
+                    .to("/test/hello")
+                    .get()
+                    // Assert
+                    .expectStatus(HttpStatus.OK);
+    }
+
+    @Test
+    void expectWithWrongStatusMustThrowAssertionError() throws Exception {
+        Assertions.assertThrows(AssertionError.class,
+                                () -> MvcRequester.on(mockMvc)
+                                              .to("/test/error")
+                                              .get()
+                                              .expectStatus(HttpStatus.OK));
+    }
+
+    @Configuration
+    @EnableWebMvc
+    static class WebConfig implements WebMvcConfigurer {
 
         @RestController
         @RequestMapping("/test")
-        public class TestController {
+        public class PersonController {
 
             @GetMapping("/hello")
             public String hello() {
