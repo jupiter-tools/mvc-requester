@@ -1,7 +1,5 @@
 package com.jupiter.tools.mvc.requester;
 
-import lombok.AllArgsConstructor;
-
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
@@ -14,9 +12,12 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
  *
  * @author Maxim Seredkin
  */
-@AllArgsConstructor(staticName = "getInstance")
 public class OAuthRequestPostProcessor implements RequestPostProcessor {
     private final String token;
+
+    public OAuthRequestPostProcessor(String token) {
+        this.token = token;
+    }
 
     @Override
     public MockHttpServletRequest postProcessRequest(MockHttpServletRequest mockHttpServletRequest) {

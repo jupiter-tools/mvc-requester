@@ -80,7 +80,7 @@ public class MvcRequestPointed {
      * @return MvcRequestPointed
      */
     public MvcRequestPointed withOAuth(String token) {
-        postProcessors.add(OAuthRequestPostProcessor.getInstance(token));
+        postProcessors.add(new OAuthRequestPostProcessor(token));
         return this;
     }
 
