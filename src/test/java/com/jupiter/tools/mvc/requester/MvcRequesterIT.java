@@ -146,7 +146,7 @@ class MvcRequesterIT {
 
     @Configuration
     @EnableWebMvc
-    static class WebConfig implements WebMvcConfigurer {
+    static class WebConfig { //implements WebMvcConfigurer {
 
         @RestController
         @RequestMapping("/test")
