@@ -24,6 +24,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.fileUpload;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
 /**
  * Created on 03.08.2018.
@@ -310,7 +311,7 @@ public class MvcRequestPointed {
      * @return
      */
     private MockHttpServletRequestBuilder makeUpload(String token) {
-        MockMultipartHttpServletRequestBuilder builder = fileUpload(uri);
+        MockMultipartHttpServletRequestBuilder builder = multipart(uri);
         if (isNotBlank(token)) {
             builder.header("Authorization", String.format("Bearer %s", token));
         }
