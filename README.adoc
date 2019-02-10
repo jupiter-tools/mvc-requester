@@ -4,6 +4,9 @@
 
 image:https://travis-ci.com/jupiter-tools/mvc-requester.svg?branch=master["Build Status", link="https://travis-ci.com/jupiter-tools/mvc-requester"]
 
+Tools which wrap the MockMvc in a simple matcher of HTTP responses,
+to write your REST-API tests in a more easy way.
+
 ## Getting started
 
 You need to add a next dependency:
