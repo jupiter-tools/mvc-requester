@@ -194,7 +194,7 @@ public class MvcRequestPointed {
      */
     public MvcRequestResult delete() throws Exception {
         return new MvcRequestResult(
-                mockMvc.perform(make(MockMvcRequestBuilders::put)
+                mockMvc.perform(make(MockMvcRequestBuilders::delete)
                                         .contentType(MediaType.APPLICATION_JSON)),
                 receiveJsonMapper);
     }

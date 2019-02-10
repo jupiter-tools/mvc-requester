@@ -150,7 +150,7 @@ class MvcRequesterIT {
 
         @RestController
         @RequestMapping("/test")
-        public class PersonController {
+        public class TestController {
 
             @GetMapping("/hello")
             public String hello() {
