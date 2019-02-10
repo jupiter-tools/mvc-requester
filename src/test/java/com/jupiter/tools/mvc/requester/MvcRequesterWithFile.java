@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -49,7 +50,7 @@ class MvcRequesterWithFile {
     }
 
     @Test
-    void testMultipartFile() throws Exception {
+    void uploadMultipartFile() throws Exception {
         // Arrange
         byte[] data = "file content".getBytes();
         // Act
@@ -65,6 +66,19 @@ class MvcRequesterWithFile {
         assertThat(result).isEqualTo("file content");
     }
 
+    @Test
+    void uploadFileWithToken() throws Exception {
+        // Arrange
+        byte[] data = "file content".getBytes();
+        // Act
+        MvcRequester.on(mockMvc)
+                    .to("/test/auth/create")
+                    .withFile("data",
+                              "filename.txt",
+                              MimeType.valueOf("text/plain"),
+                              data)
+                    .uploadWithAuth("12345-12345");
+    }
 
     @Configuration
     @EnableWebMvc
@@ -86,6 +100,18 @@ class MvcRequesterWithFile {
                 }
             }
 
+            @PostMapping("/auth/create")
+            public void authUpload(HttpServletRequest request,
+                                   @RequestPart(value = "data") MultipartFile multipartFile) throws IOException {
+
+                String authorization = request.getHeader("Authorization");
+                assertThat(authorization).isEqualTo("Bearer 12345-12345");
+
+                try (InputStream fileStream = multipartFile.getInputStream()) {
+                    String result = IOUtils.toString(fileStream, StandardCharsets.UTF_8.name());
+                    assertThat(result).isEqualTo("file content");
+                }
+            }
         }
     }
 }
