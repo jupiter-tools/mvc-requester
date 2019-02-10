@@ -35,7 +35,13 @@
             <email>antkorwin@gmail.com</email>
             <url>antkorwin.com</url>
             <roles>
-                <role>architect</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>00serd00</id>
+            <name>Sergei Vdovin</name>
+            <roles>
                 <role>developer</role>
             </roles>
         </developer>
