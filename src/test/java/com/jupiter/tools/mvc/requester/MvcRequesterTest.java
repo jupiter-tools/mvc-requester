@@ -29,8 +29,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = MvcRequesterIT.WebConfig.class)
-class MvcRequesterIT {
+@ContextConfiguration(classes = MvcRequesterTest.WebConfig.class)
+class MvcRequesterTest {
 
     @Autowired
     private WebApplicationContext wac;

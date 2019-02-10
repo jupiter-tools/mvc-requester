@@ -190,3 +190,48 @@ MvcRequester.on(mockMvc)
             .withHeader("custom-header", "12345")
             .get();
 ----
+
+## Upload the MultipartFile
+
+[source, java]
+----
+byte[] data = "file content".getBytes();
+
+MvcRequester.on(mockMvc)
+            .to("/test/create")
+            .withFile("data",
+                      "filename.txt",
+                      MimeType.valueOf("text/plain"),
+                      data)
+            .upload();
+----
+
+## Authorization
+
+### OAuth
+
+[source, java]
+----
+MvcRequester.on(mockMvc)
+            .to("/test/oauth")
+            .withOAuth(TOKEN)
+            .get();
+----
+
+will send request with the next header:
+
+`Authorization: Bearer {TOKEN}`
+
+### Basic Authorization
+
+[source, java]
+----
+String result = MvcRequester.on(mockMvc)
+                           .to("/test/basic")
+                           .withBasicAuth("root", "12345")
+                           .post()
+----
+
+will send request with the next header:
+
+`Authorization: Basic {base64}`
