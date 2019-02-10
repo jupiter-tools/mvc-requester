@@ -80,7 +80,7 @@ public class MvcRequester {
      * Send request to selected URI
      *
      * @param pattern pattern of the URI to the resource
-     * @param args    values of arguments which used in pattern
+     * @param args    values of arguments which used in the pattern
      */
     public MvcRequestPointed to(String pattern, Object... args) {
         String url = pattern.trim();

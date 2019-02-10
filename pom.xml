@@ -35,7 +35,13 @@
             <email>antkorwin@gmail.com</email>
             <url>antkorwin.com</url>
             <roles>
-                <role>architect</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>00serd00</id>
+            <name>Sergei Vdovin</name>
+            <roles>
                 <role>developer</role>
             </roles>
         </developer>
@@ -148,6 +154,13 @@
             <scope>test</scope>
         </dependency>
         <!-- Junit 5 -->
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.20</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
