@@ -23,12 +23,17 @@ import org.springframework.util.MimeType;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.fileUpload;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
 /**
  * Created on 03.08.2018.
  * <p>
- * Билдер для запросов к MVC контроллерам с предопределенным URL и MockMvc через который буду выполнятся запросы
+ * Builder for MVC requests, you can use it to: <br/>
+ * - set request parameters or headers <br/>
+ * - set request mapping <br/>
+ * - set request body <br/>
+ * - set authorization token <br/>
+ * - upload files <br/>
  *
  * @author Sergey Vdovin
  * @author Korovin Anatoliy
@@ -58,6 +63,13 @@ public class MvcRequestPointed {
         this.postProcessors = new ArrayList<>();
     }
 
+    /**
+     * Add a parameter in the request
+     *
+     * @param name   parameter name
+     * @param values parameter value
+     * @return MvcRequestPointed
+     */
     public MvcRequestPointed withParam(String name, Object... values) {
         for (Object value : values) {
             this.params.put(name, String.valueOf(value));
@@ -65,6 +77,13 @@ public class MvcRequestPointed {
         return this;
     }
 
+    /**
+     * Add a header in the request
+     *
+     * @param name   header name
+     * @param values header value
+     * @return MvcRequestPointed
+     */
     public MvcRequestPointed withHeader(String name, Object... values) {
         for (Object value : values) {
             this.headers.put(name, String.valueOf(value));
@@ -73,10 +92,9 @@ public class MvcRequestPointed {
     }
 
     /**
-     * С OAuth аутентификацией.
+     * Use OAuth authentication token in request headers
      *
-     * @param token OAuth-токен.
-     *
+     * @param token OAuth-token
      * @return MvcRequestPointed
      */
     public MvcRequestPointed withOAuth(String token) {
@@ -85,11 +103,10 @@ public class MvcRequestPointed {
     }
 
     /**
-     * С Basic аутентификацией.
+     * Use Basic authentication in request headers
      *
      * @param username имя пользователя.
      * @param password пароль пользователя.
-     *
      * @return MvcRequestPointed
      */
     public MvcRequestPointed withBasicAuth(String username, String password) {
@@ -97,17 +114,15 @@ public class MvcRequestPointed {
         return this;
     }
 
-    /**
-     * С CSRF.
-     */
     public MvcRequestPointed withCsrf() {
         postProcessors.add(csrf());
         return this;
     }
 
     /**
-     * Выполинть POST запрос без параметров
+     * Make a POST request without the body
      *
+     * @return MvcRequestResult
      * @throws Exception
      */
     public MvcRequestResult post() throws Exception {
@@ -116,11 +131,20 @@ public class MvcRequestPointed {
     }
 
     /**
-     * Добавляем файл для загрузки
+     * Make a PUT request without parameters(or body)
      *
-     * @param fieldName поле формы в котором будет передан файл
-     * @param fileData  массив байт для отправки
+     * @throws Exception
+     */
+    public MvcRequestResult put() throws Exception {
+        return new MvcRequestResult(mockMvc.perform(make(MockMvcRequestBuilders::put)),
+                                    receiveJsonMapper);
+    }
+
+    /**
+     * Add a multipart-file in the request, use it with {@link #upload()} method
      *
+     * @param fieldName multipart field name with a file content
+     * @param fileData  byte array with a file content
      * @return MvcRequestPointed
      */
     public MvcRequestPointed withFile(String fieldName,
@@ -135,7 +159,9 @@ public class MvcRequestPointed {
     }
 
     /**
-     * выполнение загрузки файла
+     * Make a file upload,
+     * <br/>
+     * To select a file you can use the {@link #withFile(String, String, MimeType, byte[])} method.
      *
      * @throws Exception
      */
@@ -145,10 +171,11 @@ public class MvcRequestPointed {
     }
 
     /**
-     * Выполнение загрузки файла с авторизацией
+     * Make a file upload with OAuth-token
+     * <br/>
+     * To select a file you can use the {@link #withFile(String, String, MimeType, byte[])} method.
      *
-     * @param token токен авторизации
-     *
+     * @param token oauth-token
      * @return MvcRequestResult
      * @throws Exception
      */
@@ -158,10 +185,9 @@ public class MvcRequestPointed {
     }
 
     /**
-     * Выполнить пост запрос, с отправкой объекта в виде JSON
+     * Make a POST request with the selected body
      *
-     * @param content отправляемый объект
-     *
+     * @param content request body, which convert in JSON before send
      * @return MvcRequestResult
      */
     public MvcRequestResult post(Object content) throws Exception {
@@ -173,10 +199,9 @@ public class MvcRequestPointed {
     }
 
     /**
-     * Выполнить PUT запрос, с отправкой объекта в виде JSON
+     * Make a PUT request with the body
      *
-     * @param content отправляемый объект
-     *
+     * @param content request body, which convert in JSON before send
      * @return MvcRequestResult
      */
     public MvcRequestResult put(Object content) throws Exception {
@@ -188,7 +213,7 @@ public class MvcRequestPointed {
     }
 
     /**
-     * Выполнить DELETE запрос, с отправкой объекта в виде JSON
+     * Make a DELETE request without the body
      *
      * @return MvcRequestResult
      */
@@ -200,38 +225,24 @@ public class MvcRequestPointed {
     }
 
     /**
-     * Выполнение пост запроса с авторизацией
+     * Make a DELETE request with json body
      *
-     * @param content   Объект отправляемый в виде json
-     * @param authToken токен авторизации
-     *
+     * @param content object which will send as JSON body in the request
      * @return MvcRequestResult
-     * @deprecated вместо этого нужно использовать метод .withOAuth(token:String?) и .post(Content:Object?)
+     * @throws Exception
      */
-    @Deprecated
-    public MvcRequestResult postWithAuth(Object content, String authToken) throws Exception {
+    public MvcRequestResult delete(Object content) throws Exception {
         return new MvcRequestResult(
-                mockMvc.perform(makePostWithAuth(authToken)
+                mockMvc.perform(make(MockMvcRequestBuilders::delete)
                                         .contentType(MediaType.APPLICATION_JSON)
-                                        .content(this.sendJsonMapper.writeValueAsString(content))),
+                                        .content(sendJsonMapper.writeValueAsString(content))),
                 receiveJsonMapper);
     }
 
     /**
-     * Выполнение пост запрса с авторизацией и без отправки какого-либо контента.
+     * Make a GET request
      *
-     * @param authToken токен авторизации
-     *
-     * @deprecated вместо этого нужно использовать метод .withOAuth(token:String?) и .post()
-     */
-    @Deprecated
-    public MvcRequestResult postWithAuth(String authToken) throws Exception {
-        return new MvcRequestResult(mockMvc.perform(makePostWithAuth(authToken)),
-                                    receiveJsonMapper);
-    }
-
-    /**
-     * Выполнение гет запроса
+     * @throws Exception
      */
     public MvcRequestResult get() throws Exception {
         return new MvcRequestResult(mockMvc.perform(make(MockMvcRequestBuilders::get)),
@@ -239,9 +250,10 @@ public class MvcRequestPointed {
     }
 
     /**
-     * Выполнение гет запроса, с отправкой объекта в виде JSON
+     * Make a GET request with the body
      *
-     * @param content отправляемый объект
+     * @param content object which will send as JSON body in the request
+     * @throws Exception
      */
     public MvcRequestResult get(Object content) throws Exception {
         return new MvcRequestResult(
@@ -251,31 +263,11 @@ public class MvcRequestPointed {
                 receiveJsonMapper);
     }
 
-    /**
-     * Выполнение гет запроса с авторизацией
-     *
-     * @deprecated вместо этого нужно использовать метод .withOAuth(token:String?) и .get()
-     */
-    @Deprecated
-    public MvcRequestResult getWithAuth(String authToken) throws Exception {
-        return new MvcRequestResult(mockMvc.perform(makeGetWithAuth(authToken)),
-                                    receiveJsonMapper);
-    }
 
     private MockHttpServletRequestBuilder make(Function<URI, MockHttpServletRequestBuilder> builderSupplier) {
 
         MockHttpServletRequestBuilder builder = builderSupplier.apply(uri);
         return prepareRequest(builder);
-    }
-
-    private MockHttpServletRequestBuilder makePostWithAuth(String authToken) {
-        return make(MockMvcRequestBuilders::post)
-                .header("Authorization", String.format("Bearer %s", authToken));
-    }
-
-    private MockHttpServletRequestBuilder makeGetWithAuth(String authToken) {
-        return make(MockMvcRequestBuilders::get)
-                .header("Authorization", String.format("Bearer %s", authToken));
     }
 
     /**
@@ -303,14 +295,13 @@ public class MvcRequestPointed {
     }
 
     /**
-     * Создание запроса на загрузку файла
+     * Make a POST request to upload a file
      *
-     * @param token токен авторизации
-     *
-     * @return
+     * @param token OAuth token
+     * @return MockHttpServletRequestBuilder
      */
     private MockHttpServletRequestBuilder makeUpload(String token) {
-        MockMultipartHttpServletRequestBuilder builder = fileUpload(uri);
+        MockMultipartHttpServletRequestBuilder builder = multipart(uri);
         if (isNotBlank(token)) {
             builder.header("Authorization", String.format("Bearer %s", token));
         }
