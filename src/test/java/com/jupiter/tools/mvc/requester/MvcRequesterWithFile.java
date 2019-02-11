@@ -80,6 +80,29 @@ class MvcRequesterWithFile {
                     .uploadWithAuth("12345-12345");
     }
 
+    @Test
+    void uploadTwoFiles() throws Exception {
+        // Arrange
+        byte[] firstData = "first file content".getBytes();
+        byte[] secondData = "second file content".getBytes();
+
+        // Act
+        String result = MvcRequester.on(mockMvc)
+                                    .to("/test/two")
+                                    .withFile("first",
+                                              "first.txt",
+                                              MimeType.valueOf("text/plain"),
+                                              firstData)
+                                    .withFile("second",
+                                              "second.txt",
+                                              MimeType.valueOf("text/plain"),
+                                              secondData)
+                                    .upload()
+                                    .returnAsPrimitive(String.class);
+        // Asserts
+        assertThat(result).isEqualTo("first file content+second file content");
+    }
+
     @Configuration
     @EnableWebMvc
     static class WebConfig implements WebMvcConfigurer {
@@ -111,6 +134,29 @@ class MvcRequesterWithFile {
                     String result = IOUtils.toString(fileStream, StandardCharsets.UTF_8.name());
                     assertThat(result).isEqualTo("file content");
                 }
+            }
+
+            @PostMapping("/two")
+            public String uploadTwoFiles(@RequestPart(value = "first") MultipartFile first,
+                                         @RequestPart(value = "second") MultipartFile second) throws IOException {
+
+                String result = "";
+
+                assertThat(first.getOriginalFilename()).isEqualTo("first.txt");
+                try (InputStream fileStream = first.getInputStream()) {
+                    String content = IOUtils.toString(fileStream, StandardCharsets.UTF_8.name());
+                    assertThat(content).isEqualTo("first file content");
+                    result += content;
+                }
+
+                assertThat(second.getOriginalFilename()).isEqualTo("second.txt");
+                try (InputStream fileStream = second.getInputStream()) {
+                    String content = IOUtils.toString(fileStream, StandardCharsets.UTF_8.name());
+                    assertThat(content).isEqualTo("second file content");
+                    result += "+" + content;
+                }
+
+                return result;
             }
         }
     }

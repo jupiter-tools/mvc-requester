@@ -104,6 +104,17 @@ class MvcRequesterTest {
     }
 
     @Test
+    void testEmptyResponse() throws Exception {
+        // Act
+        String res = MvcRequester.on(mockMvc)
+                               .to("test/create")
+                               .post()
+                               .returnAsPrimitive(String.class);
+        // Assert
+        assertThat(res).isNull();
+    }
+
+    @Test
     void testSendHeaders() throws Exception {
 
         String result = MvcRequester.on(mockMvc)
