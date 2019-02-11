@@ -59,13 +59,15 @@ void testReturnAs() throws Exception {
     SimpleObject result = MvcRequester.on(mockMvc)
                                       .to("/test/object")
                                       .get()
-                                      .returnAs(SimpleObject.class);
+                                      .returnAs(SimpleObject.class); <1>
     // Asserts
-    assertThat(result).isNotNull()
+    assertThat(result).isNotNull() <2>
                       .extracting(SimpleObject::getName, SimpleObject::getValue)
                       .containsOnly("test-name", 1987);
 }
 ----
+<1> return received response as a type safety object
+<2> asserting of the received object with a type safety
 
 ## Make a GET request with parameters:
 
@@ -86,6 +88,7 @@ void getWithParams() throws Exception {
                       .containsOnly("custom", 10101);
 }
 ----
+
 
 ## Using path variables
 
@@ -218,7 +221,7 @@ MvcRequester.on(mockMvc)
             .get();
 ----
 
-will send request with the next header:
+will send a request with the next header:
 
 `Authorization: Bearer {TOKEN}`
 
@@ -232,6 +235,6 @@ String result = MvcRequester.on(mockMvc)
                            .post()
 ----
 
-will send request with the next header:
+will send a request with the next header:
 
 `Authorization: Basic {base64}`

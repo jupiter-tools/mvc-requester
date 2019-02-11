@@ -12,6 +12,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.WebApplicationContext;
@@ -142,6 +143,14 @@ class MvcRequesterTest {
                                               .to("/test/error")
                                               .get()
                                               .expectStatus(HttpStatus.OK));
+    }
+
+    @Test
+    void doExpectTest() throws Exception {
+        MvcRequester.on(mockMvc)
+                    .to("/test/hello")
+                    .get()
+                    .doExpect(MockMvcResultMatchers.content().string("hello world"));
     }
 
     @Configuration

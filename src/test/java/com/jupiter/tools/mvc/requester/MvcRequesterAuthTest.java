@@ -1,11 +1,11 @@
 package com.jupiter.tools.mvc.requester;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import javax.servlet.http.HttpServletRequest;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
@@ -20,8 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import javax.servlet.http.HttpServletRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -50,10 +48,10 @@ class MvcRequesterAuthTest {
     void getWithOAuth() throws Exception {
         // Act
         String result = MvcRequester.on(mockMvc)
-                                   .to("/test/oauth")
-                                   .withOAuth(TOKEN)
-                                   .get()
-                                   .returnAsPrimitive(String.class);
+                                    .to("/test/oauth")
+                                    .withOAuth(TOKEN)
+                                    .get()
+                                    .returnAsPrimitive(String.class);
         // Asserts
         assertThat(result).isEqualTo(TOKEN);
     }
@@ -62,10 +60,10 @@ class MvcRequesterAuthTest {
     void postWithOAuth() throws Exception {
         // Act
         String result = MvcRequester.on(mockMvc)
-                                   .to("/test/oauth")
-                                   .withOAuth(TOKEN)
-                                   .post()
-                                   .returnAsPrimitive(String.class);
+                                    .to("/test/oauth")
+                                    .withOAuth(TOKEN)
+                                    .post()
+                                    .returnAsPrimitive(String.class);
         // Asserts
         assertThat(result).isEqualTo(TOKEN);
     }
@@ -86,10 +84,10 @@ class MvcRequesterAuthTest {
     void postWithBasicAuth() throws Exception {
         // Act
         String result = MvcRequester.on(mockMvc)
-                                   .to("/test/basic")
-                                   .withBasicAuth("root", "12345")
-                                   .post()
-                                   .returnAsPrimitive(String.class);
+                                    .to("/test/basic")
+                                    .withBasicAuth("root", "12345")
+                                    .post()
+                                    .returnAsPrimitive(String.class);
         // Asserts
         assertThat(result).isEqualTo("cm9vdDoxMjM0NQ==");
     }
@@ -138,13 +136,5 @@ class MvcRequesterAuthTest {
                 return authorization.replaceFirst("Basic ", "");
             }
         }
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    static class SimpleObject {
-        private String name;
-        private int value;
     }
 }
