@@ -61,6 +61,16 @@ class MvcRequesterDoReturnTest {
                               .containsOnly("AAA", "BBB", "CCC");
     }
 
+    @Test
+    void returnNull() throws Exception {
+        // Act
+        SimpleObject result = MvcRequester.on(mockMvc)
+                                                    .to("/test/empty")
+                                                    .get()
+                                                    .doReturn(new TypeReference<SimpleObject>() {});
+        // Asserts
+        assertThat(result).isNull();
+    }
 
     @Configuration
     @EnableWebMvc
@@ -76,6 +86,11 @@ class MvcRequesterDoReturnTest {
                 SimpleObject b = new SimpleObject("BBB", 1);
                 SimpleObject c = new SimpleObject("CCC", 1);
                 return Arrays.asList(a, b, c);
+            }
+
+            @GetMapping("/empty")
+            public SimpleObject getEmpty(){
+                return null;
             }
         }
     }
