@@ -288,6 +288,11 @@
                         <format>html</format>
                         <format>xml</format>
                     </formats>
+                    <instrumentation>
+                        <ignoreMethodAnnotations>
+                            <ignoreMethodAnnotation>com.jupiter.tools.mvc.requester.cobertura.CoverageIgnore</ignoreMethodAnnotation>
+                        </ignoreMethodAnnotations>
+                    </instrumentation>
                     <check/>
                 </configuration>
             </plugin>
