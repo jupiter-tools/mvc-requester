@@ -48,7 +48,7 @@ class MvcRequesterDoReturnTest {
     }
 
     @Test
-    void returnParametrizedType() throws Exception {
+    void returnParametrizedType() {
         // Act
         List<SimpleObject> objectList = MvcRequester.on(mockMvc)
                                                     .to("/test/objects")
@@ -62,7 +62,7 @@ class MvcRequesterDoReturnTest {
     }
 
     @Test
-    void returnNull() throws Exception {
+    void returnNull() {
         // Act
         SimpleObject result = MvcRequester.on(mockMvc)
                                                     .to("/test/empty")

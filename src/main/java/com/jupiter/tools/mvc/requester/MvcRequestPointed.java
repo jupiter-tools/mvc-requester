@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.function.Function;
 
+import static com.jupiter.tools.mvc.requester.SneakyThrow.wrap;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
@@ -130,7 +130,7 @@ public class MvcRequestPointed {
      * @return MvcRequestResult
      */
     public MvcRequestResult post() {
-        ResultActions resultActions = wrapException(() -> mockMvc.perform(make(MockMvcRequestBuilders::post)));
+        ResultActions resultActions = wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::post)));
         return new MvcRequestResult(resultActions, receiveJsonMapper);
     }
 
@@ -138,7 +138,7 @@ public class MvcRequestPointed {
      * Make a PUT request without parameters(or body)
      */
     public MvcRequestResult put() {
-        ResultActions resultActions = wrapException(() -> mockMvc.perform(make(MockMvcRequestBuilders::put)));
+        ResultActions resultActions = wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::put)));
         return new MvcRequestResult(resultActions,
                                     receiveJsonMapper);
     }
@@ -168,7 +168,7 @@ public class MvcRequestPointed {
      * To select a file you can use the {@link #withFile(String, String, MimeType, byte[])} method.
      */
     public MvcRequestResult upload() {
-        ResultActions resultActions = wrapException(() -> this.mockMvc.perform(makeUpload(null)));
+        ResultActions resultActions = wrap(() -> this.mockMvc.perform(makeUpload(null)));
         return new MvcRequestResult(resultActions, receiveJsonMapper);
     }
 
@@ -182,7 +182,7 @@ public class MvcRequestPointed {
      * @return MvcRequestResult
      */
     public MvcRequestResult uploadWithAuth(String token) {
-        ResultActions resultActions = wrapException(() -> this.mockMvc.perform(makeUpload(token)));
+        ResultActions resultActions = wrap(() -> this.mockMvc.perform(makeUpload(token)));
         return new MvcRequestResult(resultActions, receiveJsonMapper);
     }
 
@@ -195,12 +195,12 @@ public class MvcRequestPointed {
      */
     public MvcRequestResult post(Object content) {
 
-        String jsonContent = wrapException(() -> sendJsonMapper.writeValueAsString(content));
+        String jsonContent = wrap(() -> sendJsonMapper.writeValueAsString(content));
 
         ResultActions resultActions =
-                wrapException(() -> mockMvc.perform(make(MockMvcRequestBuilders::post)
-                                                            .contentType(MediaType.APPLICATION_JSON)
-                                                            .content(jsonContent)));
+                wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::post)
+                                                   .contentType(MediaType.APPLICATION_JSON)
+                                                   .content(jsonContent)));
 
         return new MvcRequestResult(resultActions, receiveJsonMapper);
     }
@@ -214,9 +214,9 @@ public class MvcRequestPointed {
      */
     public MvcRequestResult put(Object content) {
         return new MvcRequestResult(
-                wrapException(() -> mockMvc.perform(make(MockMvcRequestBuilders::put)
-                                                            .contentType(MediaType.APPLICATION_JSON)
-                                                            .content(sendJsonMapper.writeValueAsString(content)))),
+                wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::put)
+                                                   .contentType(MediaType.APPLICATION_JSON)
+                                                   .content(sendJsonMapper.writeValueAsString(content)))),
                 receiveJsonMapper);
     }
 
@@ -227,8 +227,8 @@ public class MvcRequestPointed {
      */
     public MvcRequestResult delete() {
         return new MvcRequestResult(
-                wrapException(() -> mockMvc.perform(make(MockMvcRequestBuilders::delete)
-                                                            .contentType(MediaType.APPLICATION_JSON))),
+                wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::delete)
+                                                   .contentType(MediaType.APPLICATION_JSON))),
                 receiveJsonMapper);
     }
 
@@ -241,9 +241,9 @@ public class MvcRequestPointed {
      */
     public MvcRequestResult delete(Object content) {
         return new MvcRequestResult(
-                wrapException(() -> mockMvc.perform(make(MockMvcRequestBuilders::delete)
-                                                            .contentType(MediaType.APPLICATION_JSON)
-                                                            .content(sendJsonMapper.writeValueAsString(content)))),
+                wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::delete)
+                                                   .contentType(MediaType.APPLICATION_JSON)
+                                                   .content(sendJsonMapper.writeValueAsString(content)))),
                 receiveJsonMapper);
     }
 
@@ -251,7 +251,7 @@ public class MvcRequestPointed {
      * Make a GET request
      */
     public MvcRequestResult get() {
-        return new MvcRequestResult(wrapException(() -> mockMvc.perform(make(MockMvcRequestBuilders::get))),
+        return new MvcRequestResult(wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::get))),
                                     receiveJsonMapper);
     }
 
@@ -262,18 +262,10 @@ public class MvcRequestPointed {
      */
     public MvcRequestResult get(Object content) {
         return new MvcRequestResult(
-                wrapException(() -> mockMvc.perform(make(MockMvcRequestBuilders::get)
-                                                            .contentType(MediaType.APPLICATION_JSON)
-                                                            .content(sendJsonMapper.writeValueAsString(content)))),
+                wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::get)
+                                                   .contentType(MediaType.APPLICATION_JSON)
+                                                   .content(sendJsonMapper.writeValueAsString(content)))),
                 receiveJsonMapper);
-    }
-
-    private <Type> Type wrapException(Callable<Type> callable) {
-        try {
-            return callable.call();
-        } catch (Exception e) {
-            throw new MvcRequestException(e);
-        }
     }
 
     private MockHttpServletRequestBuilder make(Function<URI, MockHttpServletRequestBuilder> builderSupplier) {

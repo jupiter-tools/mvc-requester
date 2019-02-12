@@ -56,7 +56,7 @@ class MvcRequesterRequestMappingTest {
 
 
         @Test
-        void get() throws Exception {
+        void get() {
             // Act
             String result = MvcRequester.on(mockMvc)
                                         .to("simple/hello")
@@ -67,7 +67,7 @@ class MvcRequesterRequestMappingTest {
         }
 
         @Test
-        void post() throws Exception {
+        void post() {
             // Act
             String result = MvcRequester.on(mockMvc)
                                         .to("simple/hello")
@@ -78,7 +78,7 @@ class MvcRequesterRequestMappingTest {
         }
 
         @Test
-        void put() throws Exception {
+        void put() {
             // Act
             String result = MvcRequester.on(mockMvc)
                                         .to("simple/hello")
@@ -89,7 +89,7 @@ class MvcRequesterRequestMappingTest {
         }
 
         @Test
-        void delete() throws Exception {
+        void delete() {
             // Act
             String result = MvcRequester.on(mockMvc)
                                         .to("simple/hello")
@@ -109,7 +109,7 @@ class MvcRequesterRequestMappingTest {
         private SimpleObject body = new SimpleObject("body", 123);
 
         @Test
-        void get() throws Exception {
+        void get() {
             // Act
             String result = MvcRequester.on(mockMvc)
                                         .to("body/hello")
@@ -120,7 +120,7 @@ class MvcRequesterRequestMappingTest {
         }
 
         @Test
-        void post() throws Exception {
+        void post() {
             // Act
             String result = MvcRequester.on(mockMvc)
                                         .to("body/hello")
@@ -131,7 +131,7 @@ class MvcRequesterRequestMappingTest {
         }
 
         @Test
-        void put() throws Exception {
+        void put() {
             // Act
             String result = MvcRequester.on(mockMvc)
                                         .to("body/hello")
@@ -142,7 +142,7 @@ class MvcRequesterRequestMappingTest {
         }
 
         @Test
-        void delete() throws Exception {
+        void delete() {
             // Act
             String result = MvcRequester.on(mockMvc)
                                         .to("body/hello")

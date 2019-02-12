@@ -44,7 +44,7 @@ class MvcRequesterCsrfTest {
     }
 
     @Test
-    void testCsrf() throws Exception {
+    void testCsrf() {
         // Act
         String res = MvcRequester.on(mockMvc)
                                  .to("/test/get")

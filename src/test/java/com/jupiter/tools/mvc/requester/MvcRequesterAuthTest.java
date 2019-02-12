@@ -46,7 +46,7 @@ class MvcRequesterAuthTest {
     }
 
     @Test
-    void getWithOAuth() throws Exception {
+    void getWithOAuth() {
         // Act
         String result = MvcRequester.on(mockMvc)
                                     .to("/test/oauth")
@@ -58,7 +58,7 @@ class MvcRequesterAuthTest {
     }
 
     @Test
-    void postWithOAuth() throws Exception {
+    void postWithOAuth() {
         // Act
         String result = MvcRequester.on(mockMvc)
                                     .to("/test/oauth")
@@ -70,7 +70,7 @@ class MvcRequesterAuthTest {
     }
 
     @Test
-    void getWithBasicAuth() throws Exception {
+    void getWithBasicAuth() {
         // Act
         String result = MvcRequester.on(mockMvc)
                                     .to("/test/basic")
@@ -82,7 +82,7 @@ class MvcRequesterAuthTest {
     }
 
     @Test
-    void postWithBasicAuth() throws Exception {
+    void postWithBasicAuth() {
         // Act
         String result = MvcRequester.on(mockMvc)
                                     .to("/test/basic")
@@ -94,7 +94,7 @@ class MvcRequesterAuthTest {
     }
 
     @Test
-    void postWithNullToken() throws Exception {
+    void postWithNullToken() {
         // Act
         Assertions.assertThrows(Exception.class,
                                 () -> MvcRequester.on(mockMvc)

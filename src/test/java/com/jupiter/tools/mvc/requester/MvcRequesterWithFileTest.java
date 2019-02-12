@@ -52,7 +52,7 @@ class MvcRequesterWithFileTest {
     }
 
     @Test
-    void uploadMultipartFile() throws Exception {
+    void uploadMultipartFile() {
         // Arrange
         byte[] data = "file content".getBytes();
         // Act
@@ -69,7 +69,7 @@ class MvcRequesterWithFileTest {
     }
 
     @Test
-    void uploadFileWithToken() throws Exception {
+    void uploadFileWithToken() {
         // Arrange
         byte[] data = "file content".getBytes();
         // Act
@@ -83,7 +83,7 @@ class MvcRequesterWithFileTest {
     }
 
     @Test
-    void uploadWithoutMimeType() throws Exception {
+    void uploadWithoutMimeType() {
         // Arrange
         byte[] data = "file content".getBytes();
         // Act
@@ -98,7 +98,7 @@ class MvcRequesterWithFileTest {
     }
 
     @Test
-    void uploadTwoFiles() throws Exception {
+    void uploadTwoFiles() {
         // Arrange
         byte[] firstData = "first file content".getBytes();
         byte[] secondData = "second file content".getBytes();

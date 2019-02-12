@@ -104,7 +104,7 @@ class MvcRequesterTest {
     }
 
     @Test
-    void testEmptyResponse() throws Exception {
+    void testEmptyResponse() {
         // Act
         String res = MvcRequester.on(mockMvc)
                                .to("test/create")
@@ -115,7 +115,7 @@ class MvcRequesterTest {
     }
 
     @Test
-    void testSendHeaders() throws Exception {
+    void testSendHeaders() {
 
         String result = MvcRequester.on(mockMvc)
                                     .to("test/headers/check")
@@ -127,7 +127,7 @@ class MvcRequesterTest {
     }
 
     @Test
-    void testGetHeaders() throws Exception {
+    void testGetHeaders() {
         // Act
         MvcRequester.on(mockMvc)
                     .to("test/headers/get")
@@ -138,7 +138,7 @@ class MvcRequesterTest {
 
 
     @Test
-    void expectHttpStatus() throws Exception {
+    void expectHttpStatus() {
         // Act
         MvcRequester.on(mockMvc)
                     .to("/test/hello")
@@ -148,7 +148,7 @@ class MvcRequesterTest {
     }
 
     @Test
-    void expectWithWrongStatusMustThrowAssertionError() throws Exception {
+    void expectWithWrongStatusMustThrowAssertionError() {
         Assertions.assertThrows(AssertionError.class,
                                 () -> MvcRequester.on(mockMvc)
                                               .to("/test/error")
@@ -157,7 +157,7 @@ class MvcRequesterTest {
     }
 
     @Test
-    void doExpectTest() throws Exception {
+    void doExpectTest() {
         MvcRequester.on(mockMvc)
                     .to("/test/hello")
                     .get()

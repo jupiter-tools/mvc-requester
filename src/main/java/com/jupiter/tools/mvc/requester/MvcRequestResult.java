@@ -2,11 +2,11 @@ package com.jupiter.tools.mvc.requester;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 
+import static com.jupiter.tools.mvc.requester.SneakyThrow.wrap;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -35,10 +35,12 @@ public class MvcRequestResult {
      *
      * @param matcher ассерт выполняемый над результатом запроса
      */
-    public MvcRequestResult doExpect(ResultMatcher matcher) throws Exception {
-        resultActions.andDo(print());
-        resultActions.andExpect(matcher);
-        return this;
+    public MvcRequestResult doExpect(ResultMatcher matcher) {
+        return wrap(() -> {
+            resultActions.andDo(print());
+            resultActions.andExpect(matcher);
+            return this;
+        });
     }
 
     /**
@@ -46,10 +48,12 @@ public class MvcRequestResult {
      *
      * @param status expected status code
      */
-    public MvcRequestResult expectStatus(HttpStatus status) throws Exception {
-        resultActions.andDo(print());
-        resultActions.andExpect(status().is(status.value()));
-        return this;
+    public MvcRequestResult expectStatus(HttpStatus status) {
+        return wrap(() -> {
+            resultActions.andDo(print());
+            resultActions.andExpect(status().is(status.value()));
+            return this;
+        });
     }
 
     /**
@@ -59,12 +63,13 @@ public class MvcRequestResult {
      * @param value expected value of this header
      *
      * @return MvcRequestResult
-     * @throws Exception
      */
-    public MvcRequestResult expectHeader(String name, String value) throws Exception {
-        resultActions.andDo(print());
-        resultActions.andExpect(header().string(name, value));
-        return this;
+    public MvcRequestResult expectHeader(String name, String value) {
+        return wrap(() -> {
+            resultActions.andDo(print());
+            resultActions.andExpect(header().string(name, value));
+            return this;
+        });
     }
 
     /**
@@ -74,11 +79,12 @@ public class MvcRequestResult {
      * @param typeReference тип данных в который необходимо конвертировать JSON
      * @param <ResultType>
      */
-    public <ResultType> ResultType doReturn(TypeReference<ResultType> typeReference) throws Exception {
-        resultActions.andDo(print());
-        String body = resultActions.andReturn().getResponse().getContentAsString();
-
-        return isBlank(body) ? null : jsonMapper.readValue(body, typeReference);
+    public <ResultType> ResultType doReturn(TypeReference<ResultType> typeReference) {
+        return wrap(() -> {
+            resultActions.andDo(print());
+            String body = resultActions.andReturn().getResponse().getContentAsString();
+            return isBlank(body) ? null : jsonMapper.readValue(body, typeReference);
+        });
     }
 
     /**
@@ -87,14 +93,16 @@ public class MvcRequestResult {
      * @param returnType   тип данных в который необходимо конвертировать JSON
      * @param <ResultType>
      */
-    public <ResultType> ResultType returnAs(Class<ResultType> returnType) throws Exception {
-        resultActions.andDo(print());
-        String body = resultActions.andReturn().getResponse().getContentAsString();
+    public <ResultType> ResultType returnAs(Class<ResultType> returnType) {
+        return wrap(() -> {
+            resultActions.andDo(print());
+            String body = resultActions.andReturn().getResponse().getContentAsString();
 
-        return isBlank(body) ? null : jsonMapper.readerFor(returnType)
-                                                .readValue(resultActions.andReturn()
-                                                                        .getResponse()
-                                                                        .getContentAsString());
+            return isBlank(body) ? null : jsonMapper.readerFor(returnType)
+                                                    .readValue(resultActions.andReturn()
+                                                                            .getResponse()
+                                                                            .getContentAsString());
+        });
     }
 
     /**
@@ -102,9 +110,11 @@ public class MvcRequestResult {
      *
      * @param returnType expected type of result
      */
-    public <ResultType> ResultType returnAsPrimitive(Class<ResultType> returnType) throws Exception {
-        resultActions.andDo(print());
-        String body = resultActions.andReturn().getResponse().getContentAsString();
-        return isBlank(body) ? null : (ResultType) PrimitiveConverter.convertToPrimitive(body, returnType);
+    public <ResultType> ResultType returnAsPrimitive(Class<ResultType> returnType) {
+        return wrap(() -> {
+            resultActions.andDo(print());
+            String body = resultActions.andReturn().getResponse().getContentAsString();
+            return isBlank(body) ? null : (ResultType) PrimitiveConverter.convertToPrimitive(body, returnType);
+        });
     }
 }

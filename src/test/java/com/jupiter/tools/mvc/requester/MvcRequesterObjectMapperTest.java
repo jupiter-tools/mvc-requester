@@ -55,7 +55,7 @@ class MvcRequesterObjectMapperTest {
     }
 
     @Test
-    void customSendMapper() throws Exception {
+    void customSendMapper() {
         // Arrange
         ObjectMapper sendMapper = new ObjectMapper();
         ObjectMapper receiveMapper = new ObjectMapper();
@@ -71,7 +71,7 @@ class MvcRequesterObjectMapperTest {
     }
 
     @Test
-    void customReceiveMapper() throws Exception {
+    void customReceiveMapper() {
         // Arrange
         ObjectMapper sendMapper = new ObjectMapper();
         ObjectMapper receiveMapper = new ObjectMapper();
@@ -90,7 +90,7 @@ class MvcRequesterObjectMapperTest {
     }
 
     @Test
-    void customSendAndReceiveMapper() throws Exception {
+    void customSendAndReceiveMapper() {
         // Arrange
         ObjectMapper mapper = new ObjectMapper();
 

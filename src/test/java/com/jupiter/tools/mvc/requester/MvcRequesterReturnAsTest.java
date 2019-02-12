@@ -42,7 +42,7 @@ class MvcRequesterReturnAsTest {
     }
 
     @Test
-    void testReturnAs() throws Exception {
+    void testReturnAs() {
         // Act
         SimpleObject result = MvcRequester.on(mockMvc)
                                           .to("/test/object")
@@ -55,7 +55,7 @@ class MvcRequesterReturnAsTest {
     }
 
     @Test
-    void getWithParams() throws Exception {
+    void getWithParams() {
         // Act
         SimpleObject result = MvcRequester.on(mockMvc)
                                           .to("/test/custom-object")
@@ -70,7 +70,7 @@ class MvcRequesterReturnAsTest {
     }
 
     @Test
-    void getWithPathVariable() throws Exception {
+    void getWithPathVariable() {
         // Act
         SimpleObject result = MvcRequester.on(mockMvc)
                                           .to("/test/{id}/object", 7)
@@ -83,7 +83,7 @@ class MvcRequesterReturnAsTest {
     }
 
     @Test
-    void simplePost() throws Exception {
+    void simplePost() {
         // Act
         SimpleObject result = MvcRequester.on(mockMvc)
                                           .to("/test/object")
@@ -96,7 +96,7 @@ class MvcRequesterReturnAsTest {
     }
 
     @Test
-    void postObject() throws Exception {
+    void postObject() {
         // Arrange
         SimpleObject postBody = new SimpleObject("body", 987);
         // Act
@@ -111,7 +111,7 @@ class MvcRequesterReturnAsTest {
     }
 
     @Test
-    void getEmpty() throws Exception {
+    void getEmpty() {
         // Act
         SimpleObject result = MvcRequester.on(mockMvc)
                                           .to("/test/empty")
