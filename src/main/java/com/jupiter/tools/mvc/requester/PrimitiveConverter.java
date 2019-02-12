@@ -5,9 +5,13 @@ package com.jupiter.tools.mvc.requester;
  *
  * @author Korovin Anatoliy
  */
-public class PrimitiveConverter {
+class PrimitiveConverter {
 
-    public static Object convertToPrimitive(String value, Class targetType) {
+    private PrimitiveConverter(){
+        //NOP
+    }
+
+    static Object convertToPrimitive(String value, Class targetType) {
 
         if (Boolean.class == targetType) return Boolean.parseBoolean(value);
         if (Byte.class == targetType) return Byte.parseByte(value);

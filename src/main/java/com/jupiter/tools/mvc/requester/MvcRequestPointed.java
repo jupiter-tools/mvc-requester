@@ -307,11 +307,14 @@ public class MvcRequestPointed {
         }
         for (Map.Entry<String, MvcRequestFileData> entry : this.files.entrySet()) {
             MvcRequestFileData data = entry.getValue();
+
+            String contentType = data.getMimeType() == null
+                                 ? null
+                                 : data.getMimeType().toString();
+
             MockMultipartFile mockMultipartFile = new MockMultipartFile(entry.getKey(),
                                                                         data.getOriginalFileName(),
-                                                                        data.getMimeType() == null
-                                                                        ? null
-                                                                        : data.getMimeType().toString(),
+                                                                        contentType,
                                                                         data.getFileData());
             builder.file(mockMultipartFile);
         }

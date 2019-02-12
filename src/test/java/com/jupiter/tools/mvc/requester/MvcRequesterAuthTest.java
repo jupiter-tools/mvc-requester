@@ -2,6 +2,7 @@ package com.jupiter.tools.mvc.requester;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -90,6 +91,16 @@ class MvcRequesterAuthTest {
                                     .returnAsPrimitive(String.class);
         // Asserts
         assertThat(result).isEqualTo("cm9vdDoxMjM0NQ==");
+    }
+
+    @Test
+    void postWithNullToken() throws Exception {
+        // Act
+        Assertions.assertThrows(Exception.class,
+                                () -> MvcRequester.on(mockMvc)
+                                              .to("/test/oauth")
+                                              .withOAuth(null)
+                                              .post());
     }
 
     @Configuration

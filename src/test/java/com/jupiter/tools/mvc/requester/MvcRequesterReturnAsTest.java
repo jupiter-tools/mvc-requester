@@ -110,6 +110,17 @@ class MvcRequesterReturnAsTest {
                           .containsOnly("body-test", 1987);
     }
 
+    @Test
+    void getEmpty() throws Exception {
+        // Act
+        SimpleObject result = MvcRequester.on(mockMvc)
+                                          .to("/test/empty")
+                                          .get()
+                                          .returnAs(SimpleObject.class);
+        // Asserts
+        assertThat(result).isNull();
+    }
+
 
     @Configuration
     @EnableWebMvc
@@ -144,6 +155,11 @@ class MvcRequesterReturnAsTest {
             public SimpleObject postWithBody(@RequestBody SimpleObject body) {
                 return new SimpleObject(body.getName() + "-test",
                                         body.getValue() + 1000);
+            }
+
+            @GetMapping("/empty")
+            public SimpleObject getEmpty(){
+                return null;
             }
         }
     }
