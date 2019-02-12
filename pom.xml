@@ -5,12 +5,12 @@
 
     <groupId>com.jupiter-tools</groupId>
     <artifactId>mvc-requester</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
     <packaging>jar</packaging>
 
     <name>mvc-requester</name>
     <description>MvcRequester is a tool to make and assert REST-API communication</description>
-    <url>https://github.com/antkorwin/junit5-integration-test-utils</url>
+    <url>https://github.com/jupiter-tools/mvc-requester</url>
 
     <scm>
         <url>https://github.com/jupiter-tools/mvc-requester</url>                     
