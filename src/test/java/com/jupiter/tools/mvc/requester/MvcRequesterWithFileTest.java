@@ -37,8 +37,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = MvcRequesterWithFile.WebConfig.class)
-class MvcRequesterWithFile {
+@ContextConfiguration(classes = MvcRequesterWithFileTest.WebConfig.class)
+class MvcRequesterWithFileTest {
 
     @Autowired
     private WebApplicationContext wac;
