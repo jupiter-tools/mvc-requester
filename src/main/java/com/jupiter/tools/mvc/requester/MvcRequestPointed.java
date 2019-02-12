@@ -1,24 +1,25 @@
 package com.jupiter.tools.mvc.requester;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.util.MimeType;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -68,6 +69,7 @@ public class MvcRequestPointed {
      *
      * @param name   parameter name
      * @param values parameter value
+     *
      * @return MvcRequestPointed
      */
     public MvcRequestPointed withParam(String name, Object... values) {
@@ -82,6 +84,7 @@ public class MvcRequestPointed {
      *
      * @param name   header name
      * @param values header value
+     *
      * @return MvcRequestPointed
      */
     public MvcRequestPointed withHeader(String name, Object... values) {
@@ -95,6 +98,7 @@ public class MvcRequestPointed {
      * Use OAuth authentication token in request headers
      *
      * @param token OAuth-token
+     *
      * @return MvcRequestPointed
      */
     public MvcRequestPointed withOAuth(String token) {
@@ -107,6 +111,7 @@ public class MvcRequestPointed {
      *
      * @param username имя пользователя.
      * @param password пароль пользователя.
+     *
      * @return MvcRequestPointed
      */
     public MvcRequestPointed withBasicAuth(String username, String password) {
@@ -123,20 +128,18 @@ public class MvcRequestPointed {
      * Make a POST request without the body
      *
      * @return MvcRequestResult
-     * @throws Exception
      */
-    public MvcRequestResult post() throws Exception {
-        return new MvcRequestResult(mockMvc.perform(make(MockMvcRequestBuilders::post)),
-                                    receiveJsonMapper);
+    public MvcRequestResult post() {
+        ResultActions resultActions = wrapException(() -> mockMvc.perform(make(MockMvcRequestBuilders::post)));
+        return new MvcRequestResult(resultActions, receiveJsonMapper);
     }
 
     /**
      * Make a PUT request without parameters(or body)
-     *
-     * @throws Exception
      */
-    public MvcRequestResult put() throws Exception {
-        return new MvcRequestResult(mockMvc.perform(make(MockMvcRequestBuilders::put)),
+    public MvcRequestResult put() {
+        ResultActions resultActions = wrapException(() -> mockMvc.perform(make(MockMvcRequestBuilders::put)));
+        return new MvcRequestResult(resultActions,
                                     receiveJsonMapper);
     }
 
@@ -145,6 +148,7 @@ public class MvcRequestPointed {
      *
      * @param fieldName multipart field name with a file content
      * @param fileData  byte array with a file content
+     *
      * @return MvcRequestPointed
      */
     public MvcRequestPointed withFile(String fieldName,
@@ -162,12 +166,10 @@ public class MvcRequestPointed {
      * Make a file upload,
      * <br/>
      * To select a file you can use the {@link #withFile(String, String, MimeType, byte[])} method.
-     *
-     * @throws Exception
      */
-    public MvcRequestResult upload() throws Exception {
-        return new MvcRequestResult(this.mockMvc.perform(makeUpload(null)),
-                                    receiveJsonMapper);
+    public MvcRequestResult upload() {
+        ResultActions resultActions = wrapException(() -> this.mockMvc.perform(makeUpload(null)));
+        return new MvcRequestResult(resultActions, receiveJsonMapper);
     }
 
     /**
@@ -176,39 +178,45 @@ public class MvcRequestPointed {
      * To select a file you can use the {@link #withFile(String, String, MimeType, byte[])} method.
      *
      * @param token oauth-token
+     *
      * @return MvcRequestResult
-     * @throws Exception
      */
-    public MvcRequestResult uploadWithAuth(String token) throws Exception {
-        return new MvcRequestResult(this.mockMvc.perform(makeUpload(token)),
-                                    receiveJsonMapper);
+    public MvcRequestResult uploadWithAuth(String token) {
+        ResultActions resultActions = wrapException(() -> this.mockMvc.perform(makeUpload(token)));
+        return new MvcRequestResult(resultActions, receiveJsonMapper);
     }
 
     /**
      * Make a POST request with the selected body
      *
      * @param content request body, which convert in JSON before send
+     *
      * @return MvcRequestResult
      */
-    public MvcRequestResult post(Object content) throws Exception {
-        return new MvcRequestResult(
-                mockMvc.perform(make(MockMvcRequestBuilders::post)
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(sendJsonMapper.writeValueAsString(content))),
-                receiveJsonMapper);
+    public MvcRequestResult post(Object content) {
+
+        String jsonContent = wrapException(() -> sendJsonMapper.writeValueAsString(content));
+
+        ResultActions resultActions =
+                wrapException(() -> mockMvc.perform(make(MockMvcRequestBuilders::post)
+                                                            .contentType(MediaType.APPLICATION_JSON)
+                                                            .content(jsonContent)));
+
+        return new MvcRequestResult(resultActions, receiveJsonMapper);
     }
 
     /**
      * Make a PUT request with the body
      *
      * @param content request body, which convert in JSON before send
+     *
      * @return MvcRequestResult
      */
-    public MvcRequestResult put(Object content) throws Exception {
+    public MvcRequestResult put(Object content) {
         return new MvcRequestResult(
-                mockMvc.perform(make(MockMvcRequestBuilders::put)
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(sendJsonMapper.writeValueAsString(content))),
+                wrapException(() -> mockMvc.perform(make(MockMvcRequestBuilders::put)
+                                                            .contentType(MediaType.APPLICATION_JSON)
+                                                            .content(sendJsonMapper.writeValueAsString(content)))),
                 receiveJsonMapper);
     }
 
@@ -217,10 +225,10 @@ public class MvcRequestPointed {
      *
      * @return MvcRequestResult
      */
-    public MvcRequestResult delete() throws Exception {
+    public MvcRequestResult delete() {
         return new MvcRequestResult(
-                mockMvc.perform(make(MockMvcRequestBuilders::delete)
-                                        .contentType(MediaType.APPLICATION_JSON)),
+                wrapException(() -> mockMvc.perform(make(MockMvcRequestBuilders::delete)
+                                                            .contentType(MediaType.APPLICATION_JSON))),
                 receiveJsonMapper);
     }
 
@@ -228,24 +236,22 @@ public class MvcRequestPointed {
      * Make a DELETE request with json body
      *
      * @param content object which will send as JSON body in the request
+     *
      * @return MvcRequestResult
-     * @throws Exception
      */
-    public MvcRequestResult delete(Object content) throws Exception {
+    public MvcRequestResult delete(Object content) {
         return new MvcRequestResult(
-                mockMvc.perform(make(MockMvcRequestBuilders::delete)
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(sendJsonMapper.writeValueAsString(content))),
+                wrapException(() -> mockMvc.perform(make(MockMvcRequestBuilders::delete)
+                                                            .contentType(MediaType.APPLICATION_JSON)
+                                                            .content(sendJsonMapper.writeValueAsString(content)))),
                 receiveJsonMapper);
     }
 
     /**
      * Make a GET request
-     *
-     * @throws Exception
      */
-    public MvcRequestResult get() throws Exception {
-        return new MvcRequestResult(mockMvc.perform(make(MockMvcRequestBuilders::get)),
+    public MvcRequestResult get() {
+        return new MvcRequestResult(wrapException(() -> mockMvc.perform(make(MockMvcRequestBuilders::get))),
                                     receiveJsonMapper);
     }
 
@@ -253,16 +259,22 @@ public class MvcRequestPointed {
      * Make a GET request with the body
      *
      * @param content object which will send as JSON body in the request
-     * @throws Exception
      */
-    public MvcRequestResult get(Object content) throws Exception {
+    public MvcRequestResult get(Object content) {
         return new MvcRequestResult(
-                mockMvc.perform(make(MockMvcRequestBuilders::get)
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(sendJsonMapper.writeValueAsString(content))),
+                wrapException(() -> mockMvc.perform(make(MockMvcRequestBuilders::get)
+                                                            .contentType(MediaType.APPLICATION_JSON)
+                                                            .content(sendJsonMapper.writeValueAsString(content)))),
                 receiveJsonMapper);
     }
 
+    private <Type> Type wrapException(Callable<Type> callable) {
+        try {
+            return callable.call();
+        } catch (Exception e) {
+            throw new MvcRequestException(e);
+        }
+    }
 
     private MockHttpServletRequestBuilder make(Function<URI, MockHttpServletRequestBuilder> builderSupplier) {
 
@@ -298,6 +310,7 @@ public class MvcRequestPointed {
      * Make a POST request to upload a file
      *
      * @param token OAuth token
+     *
      * @return MockHttpServletRequestBuilder
      */
     private MockHttpServletRequestBuilder makeUpload(String token) {
@@ -320,4 +333,6 @@ public class MvcRequestPointed {
         }
         return prepareRequest(builder);
     }
+
+
 }

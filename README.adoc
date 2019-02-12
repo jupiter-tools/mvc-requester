@@ -3,6 +3,8 @@
 # MvcRequester
 
 image:https://travis-ci.com/jupiter-tools/mvc-requester.svg?branch=master["Build Status", link="https://travis-ci.com/jupiter-tools/mvc-requester"]
+image:https://codecov.io/gh/jupiter-tools/mvc-requester/branch/master/graph/badge.svg[link ="https://codecov.io/gh/jupiter-tools/mvc-requester"]
+
 
 Tools which wrap the MockMvc in a simple matcher of HTTP responses,
 to write your REST-API tests in a more easy way.
