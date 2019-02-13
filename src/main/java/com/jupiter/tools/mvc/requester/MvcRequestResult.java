@@ -15,7 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Created on 03.08.2018.
  * <p>
- * Билдер для обработки результата запроса к Mvc контроллеру
+ * Checks or returns the result of request.
  *
  * @author Sergey Vdovin
  * @author Korovin Anatoliy
@@ -31,9 +31,9 @@ public class MvcRequestResult {
     }
 
     /**
-     * Выполнить указанный ассерт над результатом запроса
+     * Run a custom assertion on the result
      *
-     * @param matcher ассерт выполняемый над результатом запроса
+     * @param matcher expected assertion of result
      */
     public MvcRequestResult doExpect(ResultMatcher matcher) {
         return wrap(() -> {
@@ -73,11 +73,11 @@ public class MvcRequestResult {
     }
 
     /**
-     * Позволяет вернуть тело ответа в виде объекта десериализованного из JSON
-     * Нужен когда, требуется десериализовать Generic Объекты (CollectionDTO &lt; String &gt;)
+     * Convert the response from JSON to expected object type.
+     * You can use it to return a value which parametrized by generic type.
      *
-     * @param typeReference тип данных в который необходимо конвертировать JSON
-     * @param <ResultType>
+     * @param typeReference type of expected response
+     * @param <ResultType> generic parameter
      */
     public <ResultType> ResultType doReturn(TypeReference<ResultType> typeReference) {
         return wrap(() -> {
@@ -88,10 +88,10 @@ public class MvcRequestResult {
     }
 
     /**
-     * Позволяет вернуть тело ответа в виде объекта десериализованного из JSON
+     * Return a response body converted to expected type from JSON.
      *
-     * @param returnType   тип данных в который необходимо конвертировать JSON
-     * @param <ResultType>
+     * @param returnType   expected type of response body
+     * @param <ResultType> expected type
      */
     public <ResultType> ResultType returnAs(Class<ResultType> returnType) {
         return wrap(() -> {
