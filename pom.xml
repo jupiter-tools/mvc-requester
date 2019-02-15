@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.jupiter-tools</groupId>
-    <artifactId>mvc-requester-vintage</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <artifactId>mvc-requester</artifactId>
+    <version>0.1.VINTAGE-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>mvc-requester</name>
