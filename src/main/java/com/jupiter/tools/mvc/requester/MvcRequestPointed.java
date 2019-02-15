@@ -1,5 +1,18 @@
 package com.jupiter.tools.mvc.requester;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.util.MimeType;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,19 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
-import org.springframework.util.MimeType;
-
+import static com.jupiter.tools.mvc.requester.SneakyThrow.wrap;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
@@ -28,7 +29,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 /**
  * Created on 03.08.2018.
  * <p>
- * Билдер для запросов к MVC контроллерам с предопределенным URL и MockMvc через который буду выполнятся запросы
+ * Builder for MVC requests, you can use it to: <br/>
+ * - set request parameters or headers <br/>
+ * - set request mapping <br/>
+ * - set request body <br/>
+ * - set authorization token <br/>
+ * - upload files <br/>
  *
  * @author Sergey Vdovin
  * @author Korovin Anatoliy
@@ -58,6 +64,14 @@ public class MvcRequestPointed {
         this.postProcessors = new ArrayList<>();
     }
 
+    /**
+     * Add a parameter in the request
+     *
+     * @param name   parameter name
+     * @param values parameter value
+     *
+     * @return MvcRequestPointed
+     */
     public MvcRequestPointed withParam(String name, Object... values) {
         for (Object value : values) {
             this.params.put(name, String.valueOf(value));
@@ -65,6 +79,14 @@ public class MvcRequestPointed {
         return this;
     }
 
+    /**
+     * Add a header in the request
+     *
+     * @param name   header name
+     * @param values header value
+     *
+     * @return MvcRequestPointed
+     */
     public MvcRequestPointed withHeader(String name, Object... values) {
         for (Object value : values) {
             this.headers.put(name, String.valueOf(value));
@@ -73,9 +95,9 @@ public class MvcRequestPointed {
     }
 
     /**
-     * С OAuth аутентификацией.
+     * Use OAuth authentication token in request headers
      *
-     * @param token OAuth-токен.
+     * @param token OAuth-token
      *
      * @return MvcRequestPointed
      */
@@ -85,7 +107,7 @@ public class MvcRequestPointed {
     }
 
     /**
-     * С Basic аутентификацией.
+     * Use Basic authentication in request headers
      *
      * @param username имя пользователя.
      * @param password пароль пользователя.
@@ -97,29 +119,35 @@ public class MvcRequestPointed {
         return this;
     }
 
-    /**
-     * С CSRF.
-     */
     public MvcRequestPointed withCsrf() {
         postProcessors.add(csrf());
         return this;
     }
 
     /**
-     * Выполинть POST запрос без параметров
+     * Make a POST request without the body
      *
-     * @throws Exception
+     * @return MvcRequestResult
      */
-    public MvcRequestResult post() throws Exception {
-        return new MvcRequestResult(mockMvc.perform(make(MockMvcRequestBuilders::post)),
+    public MvcRequestResult post() {
+        ResultActions resultActions = wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::post)));
+        return new MvcRequestResult(resultActions, receiveJsonMapper);
+    }
+
+    /**
+     * Make a PUT request without parameters(or body)
+     */
+    public MvcRequestResult put() {
+        ResultActions resultActions = wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::put)));
+        return new MvcRequestResult(resultActions,
                                     receiveJsonMapper);
     }
 
     /**
-     * Добавляем файл для загрузки
+     * Add a multipart-file in the request, use it with {@link #upload()} method
      *
-     * @param fieldName поле формы в котором будет передан файл
-     * @param fileData  массив байт для отправки
+     * @param fieldName multipart field name with a file content
+     * @param fileData  byte array with a file content
      *
      * @return MvcRequestPointed
      */
@@ -135,147 +163,115 @@ public class MvcRequestPointed {
     }
 
     /**
-     * выполнение загрузки файла
-     *
-     * @throws Exception
+     * Make a file upload,
+     * <br/>
+     * To select a file you can use the {@link #withFile(String, String, MimeType, byte[])} method.
      */
-    public MvcRequestResult upload() throws Exception {
-        return new MvcRequestResult(this.mockMvc.perform(makeUpload(null)),
-                                    receiveJsonMapper);
+    public MvcRequestResult upload() {
+        ResultActions resultActions = wrap(() -> this.mockMvc.perform(makeUpload(null)));
+        return new MvcRequestResult(resultActions, receiveJsonMapper);
     }
 
     /**
-     * Выполнение загрузки файла с авторизацией
+     * Make a file upload with OAuth-token
+     * <br/>
+     * To select a file you can use the {@link #withFile(String, String, MimeType, byte[])} method.
      *
-     * @param token токен авторизации
+     * @param token oauth-token
      *
      * @return MvcRequestResult
-     * @throws Exception
      */
-    public MvcRequestResult uploadWithAuth(String token) throws Exception {
-        return new MvcRequestResult(this.mockMvc.perform(makeUpload(token)),
-                                    receiveJsonMapper);
+    public MvcRequestResult uploadWithAuth(String token) {
+        ResultActions resultActions = wrap(() -> this.mockMvc.perform(makeUpload(token)));
+        return new MvcRequestResult(resultActions, receiveJsonMapper);
     }
 
     /**
-     * Выполнить пост запрос, с отправкой объекта в виде JSON
+     * Make a POST request with the selected body
      *
-     * @param content отправляемый объект
+     * @param content request body, which convert in JSON before send
      *
      * @return MvcRequestResult
      */
-    public MvcRequestResult post(Object content) throws Exception {
+    public MvcRequestResult post(Object content) {
+
+        String jsonContent = wrap(() -> sendJsonMapper.writeValueAsString(content));
+
+        ResultActions resultActions =
+                wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::post)
+                                                   .contentType(MediaType.APPLICATION_JSON)
+                                                   .content(jsonContent)));
+
+        return new MvcRequestResult(resultActions, receiveJsonMapper);
+    }
+
+    /**
+     * Make a PUT request with the body
+     *
+     * @param content request body, which convert in JSON before send
+     *
+     * @return MvcRequestResult
+     */
+    public MvcRequestResult put(Object content) {
         return new MvcRequestResult(
-                mockMvc.perform(make(MockMvcRequestBuilders::post)
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(sendJsonMapper.writeValueAsString(content))),
+                wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::put)
+                                                   .contentType(MediaType.APPLICATION_JSON)
+                                                   .content(sendJsonMapper.writeValueAsString(content)))),
                 receiveJsonMapper);
     }
 
     /**
-     * Выполнить PUT запрос, с отправкой объекта в виде JSON
-     *
-     * @param content отправляемый объект
+     * Make a DELETE request without the body
      *
      * @return MvcRequestResult
      */
-    public MvcRequestResult put(Object content) throws Exception {
+    public MvcRequestResult delete() {
         return new MvcRequestResult(
-                mockMvc.perform(make(MockMvcRequestBuilders::put)
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(sendJsonMapper.writeValueAsString(content))),
+                wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::delete)
+                                                   .contentType(MediaType.APPLICATION_JSON))),
                 receiveJsonMapper);
     }
 
     /**
-     * Выполнить DELETE запрос, с отправкой объекта в виде JSON
+     * Make a DELETE request with json body
+     *
+     * @param content object which will send as JSON body in the request
      *
      * @return MvcRequestResult
      */
-    public MvcRequestResult delete() throws Exception {
+    public MvcRequestResult delete(Object content) {
         return new MvcRequestResult(
-                mockMvc.perform(make(MockMvcRequestBuilders::put)
-                                        .contentType(MediaType.APPLICATION_JSON)),
+                wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::delete)
+                                                   .contentType(MediaType.APPLICATION_JSON)
+                                                   .content(sendJsonMapper.writeValueAsString(content)))),
                 receiveJsonMapper);
     }
 
     /**
-     * Выполнение пост запроса с авторизацией
-     *
-     * @param content   Объект отправляемый в виде json
-     * @param authToken токен авторизации
-     *
-     * @return MvcRequestResult
-     * @deprecated вместо этого нужно использовать метод .withOAuth(token:String?) и .post(Content:Object?)
+     * Make a GET request
      */
-    @Deprecated
-    public MvcRequestResult postWithAuth(Object content, String authToken) throws Exception {
-        return new MvcRequestResult(
-                mockMvc.perform(makePostWithAuth(authToken)
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(this.sendJsonMapper.writeValueAsString(content))),
-                receiveJsonMapper);
-    }
-
-    /**
-     * Выполнение пост запрса с авторизацией и без отправки какого-либо контента.
-     *
-     * @param authToken токен авторизации
-     *
-     * @deprecated вместо этого нужно использовать метод .withOAuth(token:String?) и .post()
-     */
-    @Deprecated
-    public MvcRequestResult postWithAuth(String authToken) throws Exception {
-        return new MvcRequestResult(mockMvc.perform(makePostWithAuth(authToken)),
+    public MvcRequestResult get() {
+        return new MvcRequestResult(wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::get))),
                                     receiveJsonMapper);
     }
 
     /**
-     * Выполнение гет запроса
-     */
-    public MvcRequestResult get() throws Exception {
-        return new MvcRequestResult(mockMvc.perform(make(MockMvcRequestBuilders::get)),
-                                    receiveJsonMapper);
-    }
-
-    /**
-     * Выполнение гет запроса, с отправкой объекта в виде JSON
+     * Make a GET request with the body
      *
-     * @param content отправляемый объект
+     * @param content object which will send as JSON body in the request
      */
-    public MvcRequestResult get(Object content) throws Exception {
+    public MvcRequestResult get(Object content) {
         return new MvcRequestResult(
-                mockMvc.perform(make(MockMvcRequestBuilders::get)
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(sendJsonMapper.writeValueAsString(content))),
+                wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::get)
+                                                   .contentType(MediaType.APPLICATION_JSON)
+                                                   .content(sendJsonMapper.writeValueAsString(content)))),
                 receiveJsonMapper);
-    }
-
-    /**
-     * Выполнение гет запроса с авторизацией
-     *
-     * @deprecated вместо этого нужно использовать метод .withOAuth(token:String?) и .get()
-     */
-    @Deprecated
-    public MvcRequestResult getWithAuth(String authToken) throws Exception {
-        return new MvcRequestResult(mockMvc.perform(makeGetWithAuth(authToken)),
-                                    receiveJsonMapper);
     }
 
     private MockHttpServletRequestBuilder make(Function<URI, MockHttpServletRequestBuilder> builderSupplier) {
 
         MockHttpServletRequestBuilder builder = builderSupplier.apply(uri);
         return prepareRequest(builder);
-    }
-
-    private MockHttpServletRequestBuilder makePostWithAuth(String authToken) {
-        return make(MockMvcRequestBuilders::post)
-                .header("Authorization", String.format("Bearer %s", authToken));
-    }
-
-    private MockHttpServletRequestBuilder makeGetWithAuth(String authToken) {
-        return make(MockMvcRequestBuilders::get)
-                .header("Authorization", String.format("Bearer %s", authToken));
     }
 
     /**
@@ -303,11 +299,11 @@ public class MvcRequestPointed {
     }
 
     /**
-     * Создание запроса на загрузку файла
+     * Make a POST request to upload a file
      *
-     * @param token токен авторизации
+     * @param token OAuth token
      *
-     * @return
+     * @return MockHttpServletRequestBuilder
      */
     private MockHttpServletRequestBuilder makeUpload(String token) {
         MockMultipartHttpServletRequestBuilder builder = fileUpload(uri);
@@ -316,14 +312,19 @@ public class MvcRequestPointed {
         }
         for (Map.Entry<String, MvcRequestFileData> entry : this.files.entrySet()) {
             MvcRequestFileData data = entry.getValue();
+
+            String contentType = data.getMimeType() == null
+                                 ? null
+                                 : data.getMimeType().toString();
+
             MockMultipartFile mockMultipartFile = new MockMultipartFile(entry.getKey(),
                                                                         data.getOriginalFileName(),
-                                                                        data.getMimeType() == null
-                                                                        ? null
-                                                                        : data.getMimeType().toString(),
+                                                                        contentType,
                                                                         data.getFileData());
             builder.file(mockMultipartFile);
         }
         return prepareRequest(builder);
     }
+
+
 }

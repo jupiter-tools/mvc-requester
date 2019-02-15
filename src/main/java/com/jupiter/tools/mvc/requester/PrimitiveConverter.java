@@ -1,13 +1,20 @@
 package com.jupiter.tools.mvc.requester;
 
+import com.jupiter.tools.mvc.requester.cobertura.CoverageIgnore;
+
 /**
  * Created on 16.07.2018.
  *
  * @author Korovin Anatoliy
  */
-public class PrimitiveConverter {
+final class PrimitiveConverter {
 
-    public static Object convertToPrimitive(String value, Class targetType) {
+    @CoverageIgnore
+    private PrimitiveConverter(){
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
+    static Object convertToPrimitive(String value, Class targetType) {
 
         if (Boolean.class == targetType) return Boolean.parseBoolean(value);
         if (Byte.class == targetType) return Byte.parseByte(value);

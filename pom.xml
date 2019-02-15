@@ -4,13 +4,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.jupiter-tools</groupId>
-    <artifactId>mvc-requester</artifactId>
+    <artifactId>mvc-requester-vintage</artifactId>
     <version>0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>mvc-requester</name>
     <description>MvcRequester is a tool to make and assert REST-API communication</description>
-    <url>https://github.com/antkorwin/junit5-integration-test-utils</url>
+    <url>https://github.com/jupiter-tools/mvc-requester</url>
 
     <scm>
         <url>https://github.com/jupiter-tools/mvc-requester</url>                     
@@ -35,7 +35,13 @@
             <email>antkorwin@gmail.com</email>
             <url>antkorwin.com</url>
             <roles>
-                <role>architect</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>00serd00</id>
+            <name>Sergei Vdovin</name>
+            <roles>
                 <role>developer</role>
             </roles>
         </developer>
@@ -155,6 +161,12 @@
             <version>${junit-platform.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.assertj</groupId>
@@ -163,6 +175,19 @@
             <scope>test</scope>
         </dependency>
         <!-- Junit 5 -->
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.20</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>1.3.2</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
@@ -278,6 +303,11 @@
                         <format>html</format>
                         <format>xml</format>
                     </formats>
+                    <instrumentation>
+                        <ignoreMethodAnnotations>
+                            <ignoreMethodAnnotation>com.jupiter.tools.mvc.requester.cobertura.CoverageIgnore</ignoreMethodAnnotation>
+                        </ignoreMethodAnnotations>
+                    </instrumentation>
                     <check/>
                 </configuration>
             </plugin>

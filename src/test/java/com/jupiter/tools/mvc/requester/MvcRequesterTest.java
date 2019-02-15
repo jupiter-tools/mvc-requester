@@ -12,6 +12,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.WebApplicationContext;
@@ -29,8 +30,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = MvcRequesterIT.WebConfig.class)
-class MvcRequesterIT {
+@ContextConfiguration(classes = MvcRequesterTest.WebConfig.class)
+class MvcRequesterTest {
 
     @Autowired
     private WebApplicationContext wac;
@@ -103,7 +104,18 @@ class MvcRequesterIT {
     }
 
     @Test
-    void testSendHeaders() throws Exception {
+    void testEmptyResponse() {
+        // Act
+        String res = MvcRequester.on(mockMvc)
+                               .to("test/create")
+                               .post()
+                               .returnAsPrimitive(String.class);
+        // Assert
+        assertThat(res).isNull();
+    }
+
+    @Test
+    void testSendHeaders() {
 
         String result = MvcRequester.on(mockMvc)
                                     .to("test/headers/check")
@@ -115,7 +127,7 @@ class MvcRequesterIT {
     }
 
     @Test
-    void testGetHeaders() throws Exception {
+    void testGetHeaders() {
         // Act
         MvcRequester.on(mockMvc)
                     .to("test/headers/get")
@@ -126,7 +138,7 @@ class MvcRequesterIT {
 
 
     @Test
-    void expectHttpStatus() throws Exception {
+    void expectHttpStatus() {
         // Act
         MvcRequester.on(mockMvc)
                     .to("/test/hello")
@@ -136,12 +148,20 @@ class MvcRequesterIT {
     }
 
     @Test
-    void expectWithWrongStatusMustThrowAssertionError() throws Exception {
+    void expectWithWrongStatusMustThrowAssertionError() {
         Assertions.assertThrows(AssertionError.class,
                                 () -> MvcRequester.on(mockMvc)
                                               .to("/test/error")
                                               .get()
                                               .expectStatus(HttpStatus.OK));
+    }
+
+    @Test
+    void doExpectTest() {
+        MvcRequester.on(mockMvc)
+                    .to("/test/hello")
+                    .get()
+                    .doExpect(MockMvcResultMatchers.content().string("hello world"));
     }
 
     @Configuration
@@ -150,7 +170,7 @@ class MvcRequesterIT {
 
         @RestController
         @RequestMapping("/test")
-        public class PersonController {
+        public class TestController {
 
             @GetMapping("/hello")
             public String hello() {

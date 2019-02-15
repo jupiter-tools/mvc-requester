@@ -8,7 +8,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 /**
  * Created by Maxim Seredkin on 29.03.2018.
  * <p>
- * Пост-процессор для добавление OAuth авторизации в запросы для MockMvc.
+ * Post-processor which will add an OAuth token in the request.
  *
  * @author Maxim Seredkin
  */

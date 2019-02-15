@@ -1,0 +1,242 @@
+:toc: preamble
+
+# MvcRequester
+
+image:https://travis-ci.com/jupiter-tools/mvc-requester.svg?branch=master["Build Status", link="https://travis-ci.com/jupiter-tools/mvc-requester"]
+image:https://codecov.io/gh/jupiter-tools/mvc-requester/branch/master/graph/badge.svg[link ="https://codecov.io/gh/jupiter-tools/mvc-requester"]
+
+
+Tools which wrap the MockMvc in a simple matcher of HTTP responses,
+to write your REST-API tests in a more easy way.
+
+## Getting started
+
+You need to add a next dependency:
+
+[source, xml]
+----
+<dependency>
+    <groupId>com.jupiter-tools</groupId>
+    <artifactId>mvc-requester</artifactId>
+    <version>0.1</version>
+</dependency>
+----
+
+And now you can write MVC tests in a more simple way.
+
+
+Let's consider the next controller:
+
+[source, java]
+----
+@RestController
+@RequestMapping("/test")
+public class TestController {
+
+    @GetMapping("/object")
+    public SimpleObject getObject() {
+        return new SimpleObject("test-name", 1987);
+    }
+
+    @GetMapping("/custom-object")
+    public SimpleObject getWithParams(@RequestParam("name") String name,
+                                      @RequestParam("value") int value) {
+        return new SimpleObject(name, value);
+    }
+
+    @GetMapping("/{id}/object")
+    public SimpleObject getWithPathVariable(@PathVariable("id") int id) {
+        return new SimpleObject(String.valueOf(id), id);
+    }
+}
+----
+
+## Simple GET request:
+
+[source, java]
+----
+@Test
+void testReturnAs() throws Exception {
+    // Act
+    SimpleObject result = MvcRequester.on(mockMvc)
+                                      .to("/test/object")
+                                      .get()
+                                      .returnAs(SimpleObject.class); <1>
+    // Asserts
+    assertThat(result).isNotNull() <2>
+                      .extracting(SimpleObject::getName, SimpleObject::getValue)
+                      .containsOnly("test-name", 1987);
+}
+----
+<1> return received response as a type safety object
+<2> asserting of the received object with a type safety
+
+## Make a GET request with parameters:
+
+[source, java]
+----
+@Test
+void getWithParams() throws Exception {
+    // Act
+    SimpleObject result = MvcRequester.on(mockMvc)
+                                      .to("/test/custom-object")
+                                      .withParam("name", "custom")
+                                      .withParam("value", 10101)
+                                      .get()
+                                      .returnAs(SimpleObject.class);
+    // Asserts
+    assertThat(result).isNotNull()
+                      .extracting(SimpleObject::getName, SimpleObject::getValue)
+                      .containsOnly("custom", 10101);
+}
+----
+
+
+## Using path variables
+
+[source, java]
+----
+MvcRequester.on(mockMvc)
+            .to("/users/{name}/acls", "admin") <1>
+            .get()
+            .returnAs(AclDto.class);
+----
+<1> String `admin` will be put instead of `{name}` variable in the url, before send request.
+
+## Checking returned status
+
+[source, java]
+----
+@Test
+void testCreateObject() throws Exception {
+    MvcRequester.on(mockMvc)
+                .to("/objects/create")
+                .post()
+                .expectStatus(HttpStatus.CREATED); <1>
+}
+----
+<1> Check the HTTP status of the response
+
+## Send POST request with the body
+
+Let's consider the next controller:
+
+[source, java]
+----
+@RestController
+@RequestMapping("/test")
+public class TestController {
+
+    @PostMapping("/object-body")
+    public SimpleObject postWithBody(@RequestBody SimpleObject body) {
+        return new SimpleObject(body.getName() + "-test",
+                                body.getValue() + 1000);
+    }
+}
+----
+
+[source, java]
+----
+SimpleObject postBody = new SimpleObject("body", 987); <1>
+
+SimpleObject result = MvcRequester.on(mockMvc)
+                                  .to("/test/object-body")
+                                  .post(postBody) <2>
+                                  .returnAs(SimpleObject.class);
+----
+<1> create an object which will send in the body
+<2> send a POST request with converting the body to JSON
+
+## Expected Parametrized Type
+
+For example, we consider an API which return the list of entities:
+
+[source, java]
+----
+@RestController
+@RequestMapping("/objects")
+public class TestController {
+
+    @GetMapping("/list")
+    public List<SimpleObject> getObject() {
+        SimpleObject a = new SimpleObject("AAA", 1);
+        SimpleObject b = new SimpleObject("BBB", 1);
+        SimpleObject c = new SimpleObject("CCC", 1);
+        return Arrays.asList(a, b, c);
+    }
+}
+----
+
+and we can test it like that:
+
+[source, java]
+----
+@Test
+void parametrizedType() throws Exception {
+    // Act
+    List<SimpleObject> objectList = MvcRequester.on(mockMvc)
+                                                .to("/objects/list")
+                                                .get()
+                                                .doReturn(new TypeReference<List<SimpleObject>>() {});
+    // Asserts
+    assertThat(objectList).isNotNull()
+                          .hasSize(3)
+                          .extracting(SimpleObject::getName)
+                          .containsOnly("AAA", "BBB", "CCC");
+}
+----
+
+## Use custom headers in request
+
+[source,java]
+----
+MvcRequester.on(mockMvc)
+            .to("test/headers/check")
+            .withHeader("custom-header", "12345")
+            .get();
+----
+
+## Upload the MultipartFile
+
+[source, java]
+----
+byte[] data = "file content".getBytes();
+
+MvcRequester.on(mockMvc)
+            .to("/test/create")
+            .withFile("data",
+                      "filename.txt",
+                      MimeType.valueOf("text/plain"),
+                      data)
+            .upload();
+----
+
+## Authorization
+
+### OAuth
+
+[source, java]
+----
+MvcRequester.on(mockMvc)
+            .to("/test/oauth")
+            .withOAuth(TOKEN)
+            .get();
+----
+
+will send a request with the next header:
+
+`Authorization: Bearer {TOKEN}`
+
+### Basic Authorization
+
+[source, java]
+----
+String result = MvcRequester.on(mockMvc)
+                           .to("/test/basic")
+                           .withBasicAuth("root", "12345")
+                           .post()
+----
+
+will send a request with the next header:
+
+`Authorization: Basic {base64}`

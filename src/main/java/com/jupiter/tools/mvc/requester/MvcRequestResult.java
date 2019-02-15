@@ -2,11 +2,11 @@ package com.jupiter.tools.mvc.requester;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 
+import static com.jupiter.tools.mvc.requester.SneakyThrow.wrap;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -15,7 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Created on 03.08.2018.
  * <p>
- * Билдер для обработки результата запроса к Mvc контроллеру
+ * Checks or returns the result of request.
  *
  * @author Sergey Vdovin
  * @author Korovin Anatoliy
@@ -31,14 +31,16 @@ public class MvcRequestResult {
     }
 
     /**
-     * Выполнить указанный ассерт над результатом запроса
+     * Run a custom assertion on the result
      *
-     * @param matcher ассерт выполняемый над результатом запроса
+     * @param matcher expected assertion of result
      */
-    public MvcRequestResult doExpect(ResultMatcher matcher) throws Exception {
-        resultActions.andDo(print());
-        resultActions.andExpect(matcher);
-        return this;
+    public MvcRequestResult doExpect(ResultMatcher matcher) {
+        return wrap(() -> {
+            resultActions.andDo(print());
+            resultActions.andExpect(matcher);
+            return this;
+        });
     }
 
     /**
@@ -46,10 +48,12 @@ public class MvcRequestResult {
      *
      * @param status expected status code
      */
-    public MvcRequestResult expectStatus(HttpStatus status) throws Exception {
-        resultActions.andDo(print());
-        resultActions.andExpect(status().is(status.value()));
-        return this;
+    public MvcRequestResult expectStatus(HttpStatus status) {
+        return wrap(() -> {
+            resultActions.andDo(print());
+            resultActions.andExpect(status().is(status.value()));
+            return this;
+        });
     }
 
     /**
@@ -59,42 +63,46 @@ public class MvcRequestResult {
      * @param value expected value of this header
      *
      * @return MvcRequestResult
-     * @throws Exception
      */
-    public MvcRequestResult expectHeader(String name, String value) throws Exception {
-        resultActions.andDo(print());
-        resultActions.andExpect(header().string(name, value));
-        return this;
+    public MvcRequestResult expectHeader(String name, String value) {
+        return wrap(() -> {
+            resultActions.andDo(print());
+            resultActions.andExpect(header().string(name, value));
+            return this;
+        });
     }
 
     /**
-     * Позволяет вернуть тело ответа в виде объекта десериализованного из JSON
-     * Нужен когда, требуется десериализовать Generic Объекты (CollectionDTO &lt; String &gt;)
+     * Convert the response from JSON to expected object type.
+     * You can use it to return a value which parametrized by generic type.
      *
-     * @param typeReference тип данных в который необходимо конвертировать JSON
-     * @param <ResultType>
+     * @param typeReference type of expected response
+     * @param <ResultType> generic parameter
      */
-    public <ResultType> ResultType doReturn(TypeReference<ResultType> typeReference) throws Exception {
-        resultActions.andDo(print());
-        String body = resultActions.andReturn().getResponse().getContentAsString();
-
-        return isBlank(body) ? null : jsonMapper.readValue(body, typeReference);
+    public <ResultType> ResultType doReturn(TypeReference<ResultType> typeReference) {
+        return wrap(() -> {
+            resultActions.andDo(print());
+            String body = resultActions.andReturn().getResponse().getContentAsString();
+            return isBlank(body) ? null : jsonMapper.readValue(body, typeReference);
+        });
     }
 
     /**
-     * Позволяет вернуть тело ответа в виде объекта десериализованного из JSON
+     * Return a response body converted to expected type from JSON.
      *
-     * @param returnType   тип данных в который необходимо конвертировать JSON
-     * @param <ResultType>
+     * @param returnType   expected type of response body
+     * @param <ResultType> expected type
      */
-    public <ResultType> ResultType returnAs(Class<ResultType> returnType) throws Exception {
-        resultActions.andDo(print());
-        String body = resultActions.andReturn().getResponse().getContentAsString();
+    public <ResultType> ResultType returnAs(Class<ResultType> returnType) {
+        return wrap(() -> {
+            resultActions.andDo(print());
+            String body = resultActions.andReturn().getResponse().getContentAsString();
 
-        return isBlank(body) ? null : jsonMapper.readerFor(returnType)
-                                                .readValue(resultActions.andReturn()
-                                                                        .getResponse()
-                                                                        .getContentAsString());
+            return isBlank(body) ? null : jsonMapper.readerFor(returnType)
+                                                    .readValue(resultActions.andReturn()
+                                                                            .getResponse()
+                                                                            .getContentAsString());
+        });
     }
 
     /**
@@ -102,9 +110,11 @@ public class MvcRequestResult {
      *
      * @param returnType expected type of result
      */
-    public <ResultType> ResultType returnAsPrimitive(Class<ResultType> returnType) throws Exception {
-        resultActions.andDo(print());
-        String body = resultActions.andReturn().getResponse().getContentAsString();
-        return isBlank(body) ? null : (ResultType) PrimitiveConverter.convertToPrimitive(body, returnType);
+    public <ResultType> ResultType returnAsPrimitive(Class<ResultType> returnType) {
+        return wrap(() -> {
+            resultActions.andDo(print());
+            String body = resultActions.andReturn().getResponse().getContentAsString();
+            return isBlank(body) ? null : (ResultType) PrimitiveConverter.convertToPrimitive(body, returnType);
+        });
     }
 }
