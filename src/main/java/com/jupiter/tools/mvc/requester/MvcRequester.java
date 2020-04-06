@@ -2,13 +2,14 @@ package com.jupiter.tools.mvc.requester;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jupiter.tools.mvc.requester.url.UriBuilder;
 
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.util.UriComponentsBuilder;
+
 
 /**
  * Created on 30.08.2017.
- *
+ * <p>
  * Wrapper for MockMvc to send request and assert response
  * in more intuitive way.
  *
@@ -20,21 +21,25 @@ public class MvcRequester {
     private final ObjectMapper sendJsonMapper;
     private final ObjectMapper receiveJsonMapper;
     private final MockMvc mockMvc;
+    private final UriBuilder uriBuilder;
 
     private MvcRequester(MockMvc mockMvc) {
 
         this.mockMvc = mockMvc;
         this.sendJsonMapper = new ObjectMapper();
         this.receiveJsonMapper = new ObjectMapper();
+        this.uriBuilder = new UriBuilder();
     }
 
     private MvcRequester(MockMvc mockMvc,
                          ObjectMapper sendJsonMapper,
-                         ObjectMapper receiveJsonMapper) {
+                         ObjectMapper receiveJsonMapper,
+                         UriBuilder uriBuilder) {
 
         this.mockMvc = mockMvc;
         this.sendJsonMapper = sendJsonMapper;
         this.receiveJsonMapper = receiveJsonMapper;
+        this.uriBuilder = uriBuilder;
     }
 
     /**
@@ -57,7 +62,7 @@ public class MvcRequester {
     public static MvcRequester on(MockMvc mockMvc,
                                   ObjectMapper objectMapper) {
 
-        return new MvcRequester(mockMvc, objectMapper, objectMapper);
+        return new MvcRequester(mockMvc, objectMapper, objectMapper, new UriBuilder());
     }
 
     /**
@@ -73,7 +78,7 @@ public class MvcRequester {
                                   ObjectMapper sendJsonMapper,
                                   ObjectMapper receiveJsonMapper) {
 
-        return new MvcRequester(mockMvc, sendJsonMapper, receiveJsonMapper);
+        return new MvcRequester(mockMvc, sendJsonMapper, receiveJsonMapper, new UriBuilder());
     }
 
     /**
@@ -83,15 +88,11 @@ public class MvcRequester {
      * @param args    values of arguments which used in the pattern
      */
     public MvcRequestPointed to(String pattern, Object... args) {
-        String url = pattern.trim();
-        if (url.charAt(0) != '/') {
-            url = '/' + url;
-        }
-        return new MvcRequestPointed(mockMvc, UriComponentsBuilder.fromUriString(url)
-                                                                  .buildAndExpand(args)
-                                                                  .encode()
-                                                                  .toUri(),
+
+        return new MvcRequestPointed(mockMvc, new UriBuilder().build(pattern, args),
                                      sendJsonMapper,
                                      receiveJsonMapper);
     }
+
+
 }

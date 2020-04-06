@@ -164,6 +164,45 @@ class MvcRequesterTest {
                     .doExpect(MockMvcResultMatchers.content().string("hello world"));
     }
 
+    @Test
+    void skipUrlPrefix() throws Exception {
+        // Act
+        String result = MvcRequester.on(mockMvc)
+                                    .to("test/hello")  // URI without starting `/`
+                                    .get()
+                                    // Assert
+                                    .expectStatus(HttpStatus.OK)
+                                    .returnAsPrimitive(String.class);
+
+        assertThat(result).isEqualTo("hello world");
+    }
+
+    @Test
+    void urlPrefixInFirstArg() throws Exception {
+        // Act
+        String result = MvcRequester.on(mockMvc)
+                                    .to("{url}/hello", "/test") // starting `/` in the first arg
+                                    .get()
+                                    // Assert
+                                    .expectStatus(HttpStatus.OK)
+                                    .returnAsPrimitive(String.class);
+
+        assertThat(result).isEqualTo("hello world");
+    }
+
+    @Test
+    void withoutUrlPrefixInFirstArg() throws Exception {
+        // Act
+        String result = MvcRequester.on(mockMvc)
+                                    .to("{url}/hello", "test")
+                                    .get()
+                                    // Assert
+                                    .expectStatus(HttpStatus.OK)
+                                    .returnAsPrimitive(String.class);
+
+        assertThat(result).isEqualTo("hello world");
+    }
+
     @Configuration
     @EnableWebMvc
     static class WebConfig implements WebMvcConfigurer {
