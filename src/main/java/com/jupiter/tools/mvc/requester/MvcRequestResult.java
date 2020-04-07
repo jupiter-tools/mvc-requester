@@ -2,6 +2,7 @@ package com.jupiter.tools.mvc.requester;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -34,6 +35,7 @@ public class MvcRequestResult {
      * Run a custom assertion on the result
      *
      * @param matcher expected assertion of result
+     * @return MvcRequestResult
      */
     public MvcRequestResult doExpect(ResultMatcher matcher) {
         return wrap(() -> {
@@ -47,6 +49,7 @@ public class MvcRequestResult {
      * check status code of the response
      *
      * @param status expected status code
+     * @return MvcRequestResult
      */
     public MvcRequestResult expectStatus(HttpStatus status) {
         return wrap(() -> {
@@ -61,7 +64,6 @@ public class MvcRequestResult {
      *
      * @param name  header name
      * @param value expected value of this header
-     *
      * @return MvcRequestResult
      */
     public MvcRequestResult expectHeader(String name, String value) {
@@ -77,7 +79,8 @@ public class MvcRequestResult {
      * You can use it to return a value which parametrized by generic type.
      *
      * @param typeReference type of expected response
-     * @param <ResultType> generic parameter
+     * @param <ResultType>  generic parameter
+     * @return ResultType result of invocation
      */
     public <ResultType> ResultType doReturn(TypeReference<ResultType> typeReference) {
         return wrap(() -> {
@@ -92,6 +95,7 @@ public class MvcRequestResult {
      *
      * @param returnType   expected type of response body
      * @param <ResultType> expected type
+     * @return ResultType result of invocation
      */
     public <ResultType> ResultType returnAs(Class<ResultType> returnType) {
         return wrap(() -> {
@@ -108,7 +112,9 @@ public class MvcRequestResult {
     /**
      * return result as a primitive type
      *
-     * @param returnType expected type of result
+     * @param returnType   expected type of result
+     * @param <ResultType> expected type
+     * @return ResultType result of invocation
      */
     public <ResultType> ResultType returnAsPrimitive(Class<ResultType> returnType) {
         return wrap(() -> {

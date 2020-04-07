@@ -1,8 +1,16 @@
 package com.jupiter.tools.mvc.requester;
 
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
@@ -13,29 +21,21 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.util.MimeType;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
 import static com.jupiter.tools.mvc.requester.SneakyThrow.wrap;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.fileUpload;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
 /**
  * Created on 03.08.2018.
- * <p>
- * Builder for MVC requests, you can use it to: <br/>
- * - set request parameters or headers <br/>
- * - set request mapping <br/>
- * - set request body <br/>
- * - set authorization token <br/>
- * - upload files <br/>
+ * <p><br>
+ * Builder for MVC requests, you can use it to: <br>
+ * - set request parameters or headers <br>
+ * - set request mapping <br>
+ * - set request body <br>
+ * - set authorization token <br>
+ * - upload files <br>
  *
  * @author Sergey Vdovin
  * @author Korovin Anatoliy
@@ -70,7 +70,6 @@ public class MvcRequestPointed {
      *
      * @param name   parameter name
      * @param values parameter value
-     *
      * @return MvcRequestPointed
      */
     public MvcRequestPointed withParam(String name, Object... values) {
@@ -85,7 +84,6 @@ public class MvcRequestPointed {
      *
      * @param name   header name
      * @param values header value
-     *
      * @return MvcRequestPointed
      */
     public MvcRequestPointed withHeader(String name, Object... values) {
@@ -99,7 +97,6 @@ public class MvcRequestPointed {
      * Use OAuth authentication token in request headers
      *
      * @param token OAuth-token
-     *
      * @return MvcRequestPointed
      */
     public MvcRequestPointed withOAuth(String token) {
@@ -112,7 +109,6 @@ public class MvcRequestPointed {
      *
      * @param username имя пользователя.
      * @param password пароль пользователя.
-     *
      * @return MvcRequestPointed
      */
     public MvcRequestPointed withBasicAuth(String username, String password) {
@@ -137,6 +133,8 @@ public class MvcRequestPointed {
 
     /**
      * Make a PUT request without parameters(or body)
+     *
+     * @return MvcRequestResult
      */
     public MvcRequestResult put() {
         ResultActions resultActions = wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::put)));
@@ -147,9 +145,10 @@ public class MvcRequestPointed {
     /**
      * Add a multipart-file in the request, use it with {@link #upload()} method
      *
-     * @param fieldName multipart field name with a file content
-     * @param fileData  byte array with a file content
-     *
+     * @param fieldName        multipart field name with a file content
+     * @param originalFileName filename
+     * @param mimeType         mime type of the file
+     * @param fileData         byte array with a file content
      * @return MvcRequestPointed
      */
     public MvcRequestPointed withFile(String fieldName,
@@ -165,8 +164,10 @@ public class MvcRequestPointed {
 
     /**
      * Make a file upload,
-     * <br/>
+     * <p>
      * To select a file you can use the {@link #withFile(String, String, MimeType, byte[])} method.
+     *
+     * @return MvcRequestResult
      */
     public MvcRequestResult upload() {
         ResultActions resultActions = wrap(() -> this.mockMvc.perform(makeUpload(null)));
@@ -175,11 +176,10 @@ public class MvcRequestPointed {
 
     /**
      * Make a file upload with OAuth-token
-     * <br/>
+     * <br>
      * To select a file you can use the {@link #withFile(String, String, MimeType, byte[])} method.
      *
      * @param token oauth-token
-     *
      * @return MvcRequestResult
      */
     public MvcRequestResult uploadWithAuth(String token) {
@@ -191,7 +191,6 @@ public class MvcRequestPointed {
      * Make a POST request with the selected body
      *
      * @param content request body, which convert in JSON before send
-     *
      * @return MvcRequestResult
      */
     public MvcRequestResult post(Object content) {
@@ -210,7 +209,6 @@ public class MvcRequestPointed {
      * Make a PUT request with the body
      *
      * @param content request body, which convert in JSON before send
-     *
      * @return MvcRequestResult
      */
     public MvcRequestResult put(Object content) {
@@ -237,7 +235,6 @@ public class MvcRequestPointed {
      * Make a DELETE request with json body
      *
      * @param content object which will send as JSON body in the request
-     *
      * @return MvcRequestResult
      */
     public MvcRequestResult delete(Object content) {
@@ -250,6 +247,8 @@ public class MvcRequestPointed {
 
     /**
      * Make a GET request
+     *
+     * @return MvcRequestResult
      */
     public MvcRequestResult get() {
         return new MvcRequestResult(wrap(() -> mockMvc.perform(make(MockMvcRequestBuilders::get))),
@@ -260,6 +259,7 @@ public class MvcRequestPointed {
      * Make a GET request with the body
      *
      * @param content object which will send as JSON body in the request
+     * @return MvcRequestResult
      */
     public MvcRequestResult get(Object content) {
         return new MvcRequestResult(
@@ -303,7 +303,6 @@ public class MvcRequestPointed {
      * Make a POST request to upload a file
      *
      * @param token OAuth token
-     *
      * @return MockHttpServletRequestBuilder
      */
     private MockHttpServletRequestBuilder makeUpload(String token) {

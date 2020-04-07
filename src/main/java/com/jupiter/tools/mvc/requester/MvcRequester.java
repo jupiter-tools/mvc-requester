@@ -46,6 +46,7 @@ public class MvcRequester {
      * static factory method
      *
      * @param mockMvc {@link MockMvc} which will be used to make a request
+     * @return MvcRequester
      */
     public static MvcRequester on(MockMvc mockMvc) {
         return new MvcRequester(mockMvc);
@@ -86,6 +87,7 @@ public class MvcRequester {
      *
      * @param pattern pattern of the URI to the resource
      * @param args    values of arguments which used in the pattern
+     * @return MvcRequestPointed
      */
     public MvcRequestPointed to(String pattern, Object... args) {
 
