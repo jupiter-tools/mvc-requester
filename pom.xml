@@ -5,7 +5,7 @@
 
     <groupId>com.jupiter-tools</groupId>
     <artifactId>mvc-requester</artifactId>
-    <version>0.3</version>
+    <version>0.2-spring4</version>
     <packaging>jar</packaging>
 
     <name>mvc-requester</name>
