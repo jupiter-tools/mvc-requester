@@ -89,7 +89,8 @@ public class MvcRequester {
      */
     public MvcRequestPointed to(String pattern, Object... args) {
 
-        return new MvcRequestPointed(mockMvc, new UriBuilder().build(pattern, args),
+        return new MvcRequestPointed(mockMvc,
+                                     uriBuilder.build(pattern, args),
                                      sendJsonMapper,
                                      receiveJsonMapper);
     }
