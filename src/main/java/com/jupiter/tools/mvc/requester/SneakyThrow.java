@@ -9,9 +9,8 @@ import java.util.concurrent.Callable;
  */
 class SneakyThrow {
 
-    // $COVERAGE-IGNORE$
     private SneakyThrow() {
-        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated"); // $COVERAGE-IGNORE$
     }
 
     /**

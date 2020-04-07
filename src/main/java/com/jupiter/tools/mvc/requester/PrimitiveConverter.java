@@ -7,9 +7,8 @@ package com.jupiter.tools.mvc.requester;
  */
 final class PrimitiveConverter {
 
-    // $COVERAGE-IGNORE$
     private PrimitiveConverter() {
-        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated"); // $COVERAGE-IGNORE$
     }
 
     static Object convertToPrimitive(String value, Class targetType) {
