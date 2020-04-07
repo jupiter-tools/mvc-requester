@@ -1,7 +1,5 @@
 package com.jupiter.tools.mvc.requester;
 
-import com.jupiter.tools.mvc.requester.cobertura.CoverageIgnore;
-
 import java.util.concurrent.Callable;
 
 /**
@@ -11,7 +9,7 @@ import java.util.concurrent.Callable;
  */
 class SneakyThrow {
 
-    @CoverageIgnore
+    // $COVERAGE-IGNORE$
     private SneakyThrow() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
@@ -21,7 +19,6 @@ class SneakyThrow {
      *
      * @param callable function which may throws checked exceptions
      * @param <Type>   type of returned value
-     *
      * @return function result
      */
     static <Type> Type wrap(Callable<Type> callable) {
