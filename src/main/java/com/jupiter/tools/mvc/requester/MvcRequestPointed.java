@@ -24,6 +24,7 @@ import static com.jupiter.tools.mvc.requester.SneakyThrow.wrap;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.fileUpload;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
 /**
@@ -306,7 +307,9 @@ public class MvcRequestPointed {
      * @return MockHttpServletRequestBuilder
      */
     private MockHttpServletRequestBuilder makeUpload(String token) {
-        MockMultipartHttpServletRequestBuilder builder = multipart(uri);
+        // here using the deprecated method - `fileUpload`, instead of new version -
+        // `multipart`, because this provide an ability to use MvcRequester with Spring 4.xx
+        MockMultipartHttpServletRequestBuilder builder = fileUpload(uri);
         if (isNotBlank(token)) {
             builder.header("Authorization", String.format("Bearer %s", token));
         }
