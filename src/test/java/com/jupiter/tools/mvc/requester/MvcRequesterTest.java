@@ -1,27 +1,35 @@
 package com.jupiter.tools.mvc.requester;
 
+import java.util.Arrays;
+import javax.servlet.http.HttpServletRequest;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.servlet.http.HttpServletRequest;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.HttpStatus.OK;
 
 /**
  * Created on 30.01.2019.
@@ -45,33 +53,33 @@ class MvcRequesterTest {
     }
 
     @Test
-    void expectStatusAndReturn() throws Exception {
+    void expectStatusAndReturn() {
         // Act
         String result = MvcRequester.on(mockMvc)
                                     .to("/test/hello")
                                     .get()
                                     // Assert
-                                    .expectStatus(HttpStatus.OK)
+                                    .expectStatus(OK)
                                     .returnAsPrimitive(String.class);
 
         assertThat(result).isEqualTo("hello world");
     }
 
     @Test
-    void returnAsPrimitiveToInteger() throws Exception {
+    void returnAsPrimitiveToInteger() {
         // Act
         Integer result = MvcRequester.on(mockMvc)
                                      .to("/test/integer")
                                      .get()
                                      // Assert
-                                     .expectStatus(HttpStatus.OK)
+                                     .expectStatus(OK)
                                      .returnAsPrimitive(Integer.class);
 
         assertThat(result).isEqualTo(42);
     }
 
     @Test
-    void testCreate() throws Exception {
+    void testCreate() {
         // Arrange
         // Act
         MvcRequester.on(mockMvc)
@@ -82,7 +90,7 @@ class MvcRequesterTest {
     }
 
     @Test
-    void testUrlTrim() throws Exception {
+    void testUrlTrim() {
         // Arrange
         // Act
         MvcRequester.on(mockMvc)
@@ -93,7 +101,7 @@ class MvcRequesterTest {
     }
 
     @Test
-    void testAppendSlashInBeginOfUrl() throws Exception {
+    void testAppendSlashInBeginOfUrl() {
         // Arrange
         // Act
         MvcRequester.on(mockMvc)
@@ -107,9 +115,9 @@ class MvcRequesterTest {
     void testEmptyResponse() {
         // Act
         String res = MvcRequester.on(mockMvc)
-                               .to("test/create")
-                               .post()
-                               .returnAsPrimitive(String.class);
+                                 .to("test/create")
+                                 .post()
+                                 .returnAsPrimitive(String.class);
         // Assert
         assertThat(res).isNull();
     }
@@ -144,16 +152,16 @@ class MvcRequesterTest {
                     .to("/test/hello")
                     .get()
                     // Assert
-                    .expectStatus(HttpStatus.OK);
+                    .expectStatus(OK);
     }
 
     @Test
     void expectWithWrongStatusMustThrowAssertionError() {
         Assertions.assertThrows(AssertionError.class,
                                 () -> MvcRequester.on(mockMvc)
-                                              .to("/test/error")
-                                              .get()
-                                              .expectStatus(HttpStatus.OK));
+                                                  .to("/test/error")
+                                                  .get()
+                                                  .expectStatus(OK));
     }
 
     @Test
@@ -165,43 +173,59 @@ class MvcRequesterTest {
     }
 
     @Test
-    void skipUrlPrefix() throws Exception {
+    void skipUrlPrefix() {
         // Act
         String result = MvcRequester.on(mockMvc)
                                     .to("test/hello")  // URI without starting `/`
                                     .get()
                                     // Assert
-                                    .expectStatus(HttpStatus.OK)
+                                    .expectStatus(OK)
                                     .returnAsPrimitive(String.class);
 
         assertThat(result).isEqualTo("hello world");
     }
 
     @Test
-    void urlPrefixInFirstArg() throws Exception {
+    void urlPrefixInFirstArg() {
         // Act
         String result = MvcRequester.on(mockMvc)
                                     .to("{url}/hello", "/test") // starting `/` in the first arg
                                     .get()
                                     // Assert
-                                    .expectStatus(HttpStatus.OK)
+                                    .expectStatus(OK)
                                     .returnAsPrimitive(String.class);
 
         assertThat(result).isEqualTo("hello world");
     }
 
     @Test
-    void withoutUrlPrefixInFirstArg() throws Exception {
+    void withoutUrlPrefixInFirstArg() {
         // Act
         String result = MvcRequester.on(mockMvc)
                                     .to("{url}/hello", "test")
                                     .get()
                                     // Assert
-                                    .expectStatus(HttpStatus.OK)
+                                    .expectStatus(OK)
                                     .returnAsPrimitive(String.class);
 
         assertThat(result).isEqualTo("hello world");
     }
+
+    @Test
+    void returnPlainResponse() {
+        // Arrange
+        byte[] expected = "hello world".getBytes();
+        // Act
+        MockHttpServletResponse response = MvcRequester.on(mockMvc)
+                                                       .to("/test/hello")
+                                                       .get()
+                                                       .returnResponse();
+        // Assert
+        assertThat(response.getStatus()).isEqualTo(OK.value());
+        byte[] result = response.getContentAsByteArray();
+        assertThat(Arrays.equals(expected, result)).isTrue();
+    }
+
 
     @Configuration
     @EnableWebMvc

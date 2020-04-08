@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 
@@ -121,6 +122,19 @@ public class MvcRequestResult {
             resultActions.andDo(print());
             String body = resultActions.andReturn().getResponse().getContentAsString();
             return isBlank(body) ? null : (ResultType) PrimitiveConverter.convertToPrimitive(body, returnType);
+        });
+    }
+
+
+    /**
+     * Return a plain received response of the REST-API invocation
+     *
+     * @return MockHttpServletResponse
+     */
+    public MockHttpServletResponse returnResponse() {
+        return wrap(() -> {
+            resultActions.andDo(print());
+            return resultActions.andReturn().getResponse();
         });
     }
 }
