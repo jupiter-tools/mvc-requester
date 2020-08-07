@@ -1,5 +1,7 @@
 package com.jupiter.tools.mvc.requester;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 
@@ -226,6 +228,24 @@ class MvcRequesterTest {
         assertThat(Arrays.equals(expected, result)).isTrue();
     }
 
+    @Test
+    void setCharsetCp1251() {
+        String response = MvcRequester.on(mockMvc)
+                                  .to("/test/charset/cp1251")
+                                  .get()
+                                  .charset(Charset.forName("cp1251"))
+                                  .returnAsPrimitive(String.class);
+        assertThat(response).isEqualTo("ђ");
+    }
+
+    @Test
+    void useDefaultCharsetUtf8() {
+        String response = MvcRequester.on(mockMvc)
+                                      .to("/test/charset/utf")
+                                      .get()
+                                      .returnAsPrimitive(String.class);
+        assertThat(response).isEqualTo("йо-хо-хойя");
+    }
 
     @Configuration
     @EnableWebMvc
@@ -270,6 +290,18 @@ class MvcRequesterTest {
                 return ResponseEntity.status(200)
                                      .header("response-header", "12345")
                                      .build();
+            }
+
+            @GetMapping(value = "/charset/cp1251", produces = "text/plain;charset=cp1251")
+            public String cp1251Charset(){
+                byte[] bytes = "ђ".getBytes(Charset.forName("cp1251"));
+                return new String(bytes, Charset.forName("cp1251"));
+            }
+
+            @GetMapping(value = "/charset/utf", produces = "text/plain;charset=utf8")
+            public String utf8Charset(){
+                byte[] bytes = "йо-хо-хойя".getBytes(StandardCharsets.UTF_8);
+                return new String(bytes, StandardCharsets.UTF_8);
             }
         }
     }

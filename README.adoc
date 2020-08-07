@@ -240,3 +240,19 @@ String result = MvcRequester.on(mockMvc)
 will send a request with the next header:
 
 `Authorization: Basic {base64}`
+
+## Response charset
+
+To get a response in the specific charset you can use `MvcRequestResult.charset` method,
+for example when we expect a response in `cp1251`:
+
+[source, java]
+----
+String response = MvcRequester.on(mockMvc)
+                              .to("/api/endpoint")
+                              .get()
+                              .charset(Charset.forName("cp1251"))
+                              .returnAsPrimitive(String.class);
+----
+
+By default MvcRequester uses the `UTF-8` charset.

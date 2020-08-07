@@ -1,5 +1,8 @@
 package com.jupiter.tools.mvc.requester;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -26,6 +29,8 @@ public class MvcRequestResult {
 
     private final ResultActions resultActions;
     private final ObjectMapper jsonMapper;
+
+    private Charset charset = StandardCharsets.UTF_8;
 
     MvcRequestResult(ResultActions resultActions, ObjectMapper jsonMapper) {
         this.resultActions = resultActions;
@@ -86,7 +91,7 @@ public class MvcRequestResult {
     public <ResultType> ResultType doReturn(TypeReference<ResultType> typeReference) {
         return wrap(() -> {
             resultActions.andDo(print());
-            String body = resultActions.andReturn().getResponse().getContentAsString();
+            String body = getResponseBody(resultActions);
             return isBlank(body) ? null : jsonMapper.readValue(body, typeReference);
         });
     }
@@ -101,8 +106,7 @@ public class MvcRequestResult {
     public <ResultType> ResultType returnAs(Class<ResultType> returnType) {
         return wrap(() -> {
             resultActions.andDo(print());
-            String body = resultActions.andReturn().getResponse().getContentAsString();
-
+            String body = getResponseBody(resultActions);
             return isBlank(body) ? null : jsonMapper.readerFor(returnType)
                                                     .readValue(resultActions.andReturn()
                                                                             .getResponse()
@@ -120,11 +124,20 @@ public class MvcRequestResult {
     public <ResultType> ResultType returnAsPrimitive(Class<ResultType> returnType) {
         return wrap(() -> {
             resultActions.andDo(print());
-            String body = resultActions.andReturn().getResponse().getContentAsString();
+            String body = getResponseBody(resultActions);
             return isBlank(body) ? null : (ResultType) PrimitiveConverter.convertToPrimitive(body, returnType);
         });
     }
 
+    /**
+     * Set charset for response converting
+     * @param charset expected charset for response
+     * @return MvcRequestResult instance
+     */
+    public MvcRequestResult charset(Charset charset){
+        this.charset = charset;
+        return this;
+    }
 
     /**
      * Return a plain received response of the REST-API invocation
@@ -136,5 +149,12 @@ public class MvcRequestResult {
             resultActions.andDo(print());
             return resultActions.andReturn().getResponse();
         });
+    }
+
+    private String getResponseBody(ResultActions resultActions) {
+        byte[] bytes = resultActions.andReturn()
+                                    .getResponse()
+                                    .getContentAsByteArray();
+        return new String(bytes, this.charset);
     }
 }
