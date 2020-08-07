@@ -243,7 +243,7 @@ will send a request with the next header:
 
 ## Response charset
 
-To get a response in the specific charset you can use `MvcRequestResult#charset` method,
+To get a response in the specific charset you can use `MvcRequestResult.charset` method,
 for example when we expect a response in `cp1251`:
 
 [source, java]
