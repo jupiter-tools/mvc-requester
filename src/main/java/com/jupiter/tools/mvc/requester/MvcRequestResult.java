@@ -107,10 +107,7 @@ public class MvcRequestResult {
         return wrap(() -> {
             resultActions.andDo(print());
             String body = getResponseBody(resultActions);
-            return isBlank(body) ? null : jsonMapper.readerFor(returnType)
-                                                    .readValue(resultActions.andReturn()
-                                                                            .getResponse()
-                                                                            .getContentAsString());
+            return isBlank(body) ? null : jsonMapper.readerFor(returnType).readValue(body);
         });
     }
 

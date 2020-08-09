@@ -5,6 +5,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -247,6 +250,15 @@ class MvcRequesterTest {
         assertThat(response).isEqualTo("йо-хо-хойя");
     }
 
+    @Test
+    void useDefaultCharsetUtf8InDto() {
+        WebConfig.TestDto testDto = MvcRequester.on(mockMvc)
+                                                .to("/test/charset/dto")
+                                                .get()
+                                                .returnAs(WebConfig.TestDto.class);
+        assertThat(testDto.getValue()).isEqualTo("йо-хо-хойя");
+    }
+
     @Configuration
     @EnableWebMvc
     static class WebConfig implements WebMvcConfigurer {
@@ -303,6 +315,19 @@ class MvcRequesterTest {
                 byte[] bytes = "йо-хо-хойя".getBytes(StandardCharsets.UTF_8);
                 return new String(bytes, StandardCharsets.UTF_8);
             }
+
+            @GetMapping(value = "/charset/dto", produces = "application/json;charset=utf8")
+            public TestDto utf8CharsetInDto(){
+                byte[] bytes = "йо-хо-хойя".getBytes(StandardCharsets.UTF_8);
+                return new TestDto(new String(bytes, StandardCharsets.UTF_8));
+            }
+        }
+
+        @Data
+        @NoArgsConstructor
+        @AllArgsConstructor
+        public static class TestDto{
+            private String value;
         }
     }
 }

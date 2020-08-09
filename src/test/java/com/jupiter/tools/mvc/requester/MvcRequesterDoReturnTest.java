@@ -21,6 +21,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
@@ -62,6 +63,21 @@ class MvcRequesterDoReturnTest {
     }
 
     @Test
+    void returnParametrizedTypeInUtf8() {
+        // Act
+        List<SimpleObject> objectList = MvcRequester.on(mockMvc)
+                                                    .to("/test/objects/charset")
+                                                    .get()
+                                                    .charset(Charset.forName("utf-8"))
+                                                    .doReturn(new TypeReference<List<SimpleObject>>() {});
+        // Asserts
+        assertThat(objectList).isNotNull()
+                              .hasSize(1)
+                              .extracting(SimpleObject::getName)
+                              .containsOnly("йо-хо-хо");
+    }
+
+    @Test
     void returnNull() {
         // Act
         SimpleObject result = MvcRequester.on(mockMvc)
@@ -91,6 +107,11 @@ class MvcRequesterDoReturnTest {
             @GetMapping("/empty")
             public SimpleObject getEmpty(){
                 return null;
+            }
+
+            @GetMapping(value = "/objects/charset", produces = "application/json;charset=utf8")
+            public List<SimpleObject> getObjectsCharset() {
+                return Arrays.asList(new SimpleObject("йо-хо-хо", 1));
             }
         }
     }
